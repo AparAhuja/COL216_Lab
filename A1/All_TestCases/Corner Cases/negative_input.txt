@@ -1,0 +1,16 @@
+-2
+
+--------------------
+
+
+
+Expected Output:
+Error: Number of points cannot be negative.
+
+
+
+Program Output:
+Error: Number of points cannot be negative.
+
+
+TEST CASE: PASSED

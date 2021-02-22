@@ -1,0 +1,22 @@
+1
+5
+3
+
+----------------
+
+
+
+
+Expected Output:
+Total area enclosed by the line plot and X-axis is: 0
+
+
+
+Program Output:
+Total area enclosed by the line plot and X-axis is: 0
+
+
+
+TEST CASE: PASSED
+
+

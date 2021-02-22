@@ -1,0 +1,16 @@
+0
+
+----------------
+
+
+
+
+Expected Output:
+Error: Number of points is zero. Area under the curve is not defined.
+
+Program Output:
+Error: Number of points is zero. Area under the curve is not defined.
+
+
+TEST CASE: PASSED
+
