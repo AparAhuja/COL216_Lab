@@ -7,7 +7,7 @@ t0: Stores 'n', the total number of points
 t1: Stores 'counter' (1 <= counter <= n + 1)
 
 
-Floating Point Registers:
+Floating Point Registers (Double Precision):
 
 f0:  used for storing user input when syscalls are made
 	 also stores currY (y2) while calculating area
