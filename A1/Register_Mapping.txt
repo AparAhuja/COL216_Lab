@@ -1,0 +1,29 @@
+Integer Registers:
+
+v0: used for making different syscalls, and also storing user inputs
+a0: used in making syscalls (outputting strings and integers/double)
+
+t0: Stores 'n', the total number of points
+t1: Stores 'counter' (1 <= counter <= n + 1)
+
+
+Floating Point Registers:
+
+f0:  used for storing user input when syscalls are made
+	 also stores currY (y2) while calculating area
+f6:  the constant HALF (0.5)
+f4:  value of area calculated till now
+f8:  stores prevX (x1) while calculating area 
+f10: stores prevY (y1) while calculating area
+f12: stores currX (x1) while calculating area
+	 also used in making syscalls and displaying area calculated on console
+f14: stores the product y1 * y2 while calculating area
+f16: stores x2 - x1 while calculating area
+f18: stores either y1 + y2 or just y1^2, depending on location of points
+f20: stores either |0.5 * (x2 - x1) * (y1 + y2)| or just y2^2 depending on location of points
+
+(* used only when points are on opposite side of X-axis *)
+f22: stores y1^2 + y2^2
+f26: stores |0.5 * (x2 - x1) * (y1^2 + y2^2) / (y2 - y1)|
+	 also used while comparing y1 * y2 with 0.0
+f28: stores y2 - y1
