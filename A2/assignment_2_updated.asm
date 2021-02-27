@@ -90,8 +90,8 @@ main:
 
             # calculate offset
             mul $t4 $t1 $s6
-	    mfhi $v1 
-            bgt $v1 $zero overflow
+	    mfhi $t8 
+            bgt $t8 $zero overflow
             blt $t4 $zero overflow
             
             # store word in array
@@ -113,26 +113,26 @@ main:
             addi $t1 $t1 -1
 			# calculate offset
             mul $t4 $t1 $s6
-            mfhi $v1 
-		        bgt $v1 $zero overflow
-		        blt $t4 $zero overflow
-			      lw $t5 array($t4)
+            mfhi $t8 
+	    bgt $t8 $zero overflow
+	    blt $t4 $zero overflow
+            lw $t5 array($t4)
             
             # decrement counter by 1 and read left operand
             addi $t1 $t1 -1
             # calculate offset
             mul $t4 $t1 $s6
-		        mfhi $v1 
-		        bgt $v1 $zero overflow
-		        blt $t4 $zero overflow
+            mfhi $t8 
+            bgt $t8 $zero overflow
+            blt $t4 $zero overflow
 			
-			lw $t6 array($t4)
+	    lw $t6 array($t4)
 
             # multiply the numbers
             mul $t7 $t6 $t5
-		        mfhi $v1 
-		        bgt $v1 $zero overflow
-		        blt $t7 $zero overflow
+	    mfhi $t8 
+            bgt $t8 $zero overflow
+            blt $t7 $zero overflow
             # store the result in the array
             sw $t7 array($t4)
 
@@ -150,20 +150,20 @@ main:
             
             # decrement counter by 1 and read right operand
             addi $t1 $t1 -1
-			# calculate offset
+	    # calculate offset
             mul $t4 $t1 $s6
-		        mfhi $v1 
-		        bgt $v1 $zero overflow
-		        blt $t4 $zero overflow
+            mfhi $t8 
+	    bgt $t8 $zero overflow
+            blt $t4 $zero overflow
             lw $t5 array($t4)
             
             # decrement counter by 1 and read left operand
             addi $t1 $t1 -1
 			# calculate offset
             mul $t4 $t1 $s6
-		        mfhi $v1 
-		        bgt $v1 $zero overflow
-		        blt $t4 $zero overflow
+            mfhi $t8 
+            bgt $t8 $zero overflow
+	    blt $t4 $zero overflow
             lw $t6 array($t4)
 
             # add the numbers
@@ -188,18 +188,18 @@ main:
             addi $t1 $t1 -1
 			# calculate offset
             mul $t4 $t1 $s6
-		        mfhi $v1 
-		        bgt $v1 $zero overflow
-		        blt $t4 $zero overflow
+            mfhi $t8 
+	    bgt $t8 $zero overflow
+	    blt $t4 $zero overflow
             lw $t5 array($t4)
             
             # decrement counter by 1 and read left operand
             addi $t1 $t1 -1
 			# calculate offset
             mul $t4 $t1 $s6
-	      	  mfhi $v1 
-	      	  bgt $v1 $zero overflow
-		        blt $t4 $zero overflow
+	    mfhi $t8 
+	    bgt $t8 $zero overflow
+	    blt $t4 $zero overflow
             lw $t6 array($t4)
 
             # subtract the numbers
