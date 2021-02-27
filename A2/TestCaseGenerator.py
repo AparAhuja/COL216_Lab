@@ -1,5 +1,6 @@
 no_of_cases = 10                 #Number of test cases
 no_of_operators = 6              #Number of operators
+opArray = ['*','+','-']
 
 import random
 def precedence(op):
@@ -231,7 +232,6 @@ def output(out):
 
 for _ in range(no_of_cases):
     n = no_of_operators
-    opArray = ['*','+','-']
 
     digit = random.randint(0,9)
     expression = str(digit)
