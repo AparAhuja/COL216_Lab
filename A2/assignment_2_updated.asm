@@ -1,11 +1,11 @@
 .data
     array: .space 320
-	  expression: .space 159
-    error_invalidChar: .asciiz "ERROR: There was an invalid character present in the expression.\nMake sure that the operands are in the range 0-9, and only +, - and * operators are used.\nProgram terminating!"
-    error_overflow: .asciiz "ERROR: Arithmetic Overflow"
-    error_illegalExp: .asciiz "ERROR: The number of operands and number of operators do not match.\nMake sure that the operands are in the range 0-9, and that for each operator exactly 2 operands are provided.\nProgram terminating!"
+	expression: .space 160
+    error_invalidChar: .asciiz "\nERROR: There is an invalid character present in the expression.\nMake sure that the operands are in the range 0-9, and only +, - and * operators are used.\nProgram terminating!"
+    error_overflow: .asciiz "\nERROR: Arithmetic Overflow"
+    error_illegalExp: .asciiz "\nERROR: The number of operands and number of operators do not match.\nMake sure that the operands are in the range 0-9, and that for each operator exactly 2 operands are provided.\nProgram terminating!"
     msg_input: .asciiz "Enter the postfix expression that needs to be evaluated: "
-    msg_output: .asciiz "The value of the postfix expression is: "
+    msg_output: .asciiz "\nThe value of the postfix expression is: "
     msg_separator: .asciiz "\n\n_______________________________________________________________\n\n"
     msg_lf: .asciiz "\n"
 
@@ -20,8 +20,10 @@ main:
 
     li $v0 8
     la $a0 expression
-    li $a1 159
+    li $a1 160
     syscall
+
+    li $a1 159
 
     # t0 is expression buffer counter
     li $t0 0
@@ -37,7 +39,7 @@ main:
     li $s5 10    # ascii code of '\n'
     li $s6 4     # offset factor for array
     loop: 
-        # loop while t0 < 120 || expression(t0) = '\n'
+        # loop while t0 <  || expression(t0) = '\n'
 
         bge $t0 $a1 displayResult
 
@@ -114,8 +116,8 @@ main:
 			# calculate offset
             mul $t4 $t1 $s6
             mfhi $t8 
-	    bgt $t8 $zero overflow
-	    blt $t4 $zero overflow
+	        bgt $t8 $zero overflow
+	        blt $t4 $zero overflow
             lw $t5 array($t4)
             
             # decrement counter by 1 and read left operand
@@ -126,11 +128,11 @@ main:
             bgt $t8 $zero overflow
             blt $t4 $zero overflow
 			
-	    lw $t6 array($t4)
+	        lw $t6 array($t4)
 
             # multiply the numbers
             mul $t7 $t6 $t5
-	    mfhi $t8 
+	        mfhi $t8 
             bgt $t8 $zero overflow
             blt $t7 $zero overflow
             # store the result in the array
@@ -153,7 +155,7 @@ main:
 	    # calculate offset
             mul $t4 $t1 $s6
             mfhi $t8 
-	    bgt $t8 $zero overflow
+	        bgt $t8 $zero overflow
             blt $t4 $zero overflow
             lw $t5 array($t4)
             
@@ -163,7 +165,7 @@ main:
             mul $t4 $t1 $s6
             mfhi $t8 
             bgt $t8 $zero overflow
-	    blt $t4 $zero overflow
+	        blt $t4 $zero overflow
             lw $t6 array($t4)
 
             # add the numbers
@@ -189,17 +191,17 @@ main:
 			# calculate offset
             mul $t4 $t1 $s6
             mfhi $t8 
-	    bgt $t8 $zero overflow
-	    blt $t4 $zero overflow
+	        bgt $t8 $zero overflow
+	        blt $t4 $zero overflow
             lw $t5 array($t4)
             
             # decrement counter by 1 and read left operand
             addi $t1 $t1 -1
 			# calculate offset
             mul $t4 $t1 $s6
-	    mfhi $t8 
-	    bgt $t8 $zero overflow
-	    blt $t4 $zero overflow
+	        mfhi $t8 
+	        bgt $t8 $zero overflow
+	        blt $t4 $zero overflow
             lw $t6 array($t4)
 
             # subtract the numbers
@@ -233,7 +235,7 @@ main:
             j exit
 	   
 	   overflow:
-		  li $v0 4
+		   li $v0 4
 	       la $a0 error_overflow
 		  syscall
 		  j exit
