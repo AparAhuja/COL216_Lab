@@ -1,0 +1,3 @@
+ERROR: There was an invalid character present in the expression.
+Make sure that the operands are in the range 0-9, and only +, - and * operators are used.
+Program terminating!

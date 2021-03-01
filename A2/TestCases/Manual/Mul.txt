@@ -1,0 +1,6 @@
+54*6*4*4*3*
+
+Expected Output: 1440
+MIPS Output: 1440
+
+TEST CASE: PASSED

@@ -1,0 +1,6 @@
+7
+
+Expected Output: 7
+MIPS Output: 7
+
+TEST CASE: PASSED

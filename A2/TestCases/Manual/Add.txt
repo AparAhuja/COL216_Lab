@@ -1,0 +1,6 @@
+54+6+4+3+
+
+Expected Output: 22
+MIPS Output: 22
+
+TEST CASE: PASSED

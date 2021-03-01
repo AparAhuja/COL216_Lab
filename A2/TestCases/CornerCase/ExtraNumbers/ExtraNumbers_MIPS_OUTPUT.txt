@@ -1,0 +1,3 @@
+ERROR: The number of operands and number of operators do not match.
+Make sure that the operands are in the range 0-9, and that for each operator exactly 2 operands are provided.
+Program terminating!
