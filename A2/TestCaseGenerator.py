@@ -1,60 +1,51 @@
 no_of_cases = 10                 #Number of test cases
-no_of_operators = 6              #Number of operators
-opArray = ['*','+','-']
+no_of_operators = 80              #Number of operators
+FILE_NAME = "Mixed_XLarge"
+opArray = ['-','*','+']
+
 
 import random
 def precedence(op):
-     
     if op == '+' or op == '-':
         return 1
     if op == '*' or op == '/':
         return 2
     return 0
- 
+
 # Function to perform arithmetic
 # operations.
 def applyOp(a, b, op):
-     
     if op == '+': return a + b
     if op == '-': return a - b
     if op == '*': return a * b
     if op == '/': return a // b
- 
+
 def evaluate(tokens):
-     
     # stack to store integer values.
     values = []
-     
     # stack to store operators.
     ops = []
     i = 0
-     
     while i < len(tokens):
-         
         # Current token is a whitespace,
         # skip it.
         if tokens[i] == ' ':
             i += 1
             continue
-         
-        # Current token is an opening 
+        # Current token is an opening
         # brace, push it to 'ops'
         elif tokens[i] == '(':
             ops.append(tokens[i])
-         
-        # Current token is a number, push 
+        # Current token is a number, push
         # it to stack for numbers.
         elif tokens[i].isdigit():
             val = 0
-             
             # There may be more than one
             # digits in the number.
             while (i < len(tokens) and
                 tokens[i].isdigit()):
-             
                 val = (val * 10) + int(tokens[i])
                 i += 1
-             
             values.append(val)
              
             # right now the i points to 
@@ -118,9 +109,9 @@ def evaluate(tokens):
     # Top of 'values' contains result,
     # return it.
     return values[-1]
-f = open("Test_Input.txt", "w")
-g = open("Expected_output.txt", "w")
-h = open("Test_Input_Infix.txt", "w")
+f = open(FILE_NAME+".txt", "w")
+g = open(FILE_NAME+"_Expected_output.txt", "w")
+h = open(FILE_NAME+"_MIPS_OUTPUT.txt", "w")
 def isOperator(input): 
       
     switch = { 
@@ -237,14 +228,14 @@ for _ in range(no_of_cases):
     expression = str(digit)
 
     for _ in range(n):
-        op = opArray[random.randint(0,2)]
+        op = opArray[random.randint(0,len(opArray)-1)]
         digit = random.randint(0,9)
         expression += (op+str(digit))
     
     output(evaluate(expression))
     postfix = inToPost(expression)
     f.write(str(postfix)+"\n")
-    h.write(expression+"\n")
+    # h.write(expression+"\n")
 f.close()
 g.close()
 h.close()
