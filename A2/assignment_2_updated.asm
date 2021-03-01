@@ -198,7 +198,7 @@ main:
 			# calculate offset
             mul $t4 $t1 $s6
             
-            # left operand in t6
+            # load left operand in t6
 			lw $t6 array($t4)
 
             # add the numbers
