@@ -9,8 +9,8 @@ cnt = 0
 for i in range(no_of_cases):
     str1 = f.readline()
     str2 = g.readline()
-    a1 = str1[:-1]
-    a2 = str2[:-1]
+    a1 = int(str1[:-1])
+    a2 = int(str2[:-1])
     error = (a1-a2)
 
     if(error == 0 ):
