@@ -10,10 +10,11 @@ string file_path = "input.txt";
 int pc = 0;
 int memory[1048576];
 
-string decimalToHexadecimal(int a) {
+string decimalToHexadecimal(long long a) {
 
     string ans = "";
     map<int, string> hex{ {0,"0"},{1,"1"},{2,"2"},{3,"3"},{4,"4"},{5,"5"},{6,"6"},{7,"7"},{8,"8"},{9,"9"},{10,"a"},{11,"b"},{12,"c"},{13,"d"},{14,"e"},{15,"f"} };
+    if(a<0){a+=4294967296;}
     for(int i = 0; i < 8; i ++) {
         int dig = a % 16;
         a = a / 16;
