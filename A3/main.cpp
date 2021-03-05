@@ -2,16 +2,16 @@
 #include <fstream>
 #include <string>
 #include <map>
-
+#include <vector>
 using namespace std;
 
-string file_path = "input.txt";
+string file_path = "/Users/aparahuja/Desktop/IITD/COL216 - Arch/COL216_Lab/A3/A3/input.txt";
 
 int pc = 0;
 int memory[1048576];
 
 string decimalToHexadecimal(long long a) {
-
+    
     string ans = "";
     map<int, string> hex{ {0,"0"},{1,"1"},{2,"2"},{3,"3"},{4,"4"},{5,"5"},{6,"6"},{7,"7"},{8,"8"},{9,"9"},{10,"a"},{11,"b"},{12,"c"},{13,"d"},{14,"e"},{15,"f"} };
     if(a<0){a+=4294967296;}
@@ -48,7 +48,7 @@ struct REGI {
         for (auto i = reg_map.begin(); i != reg_map.end(); i++) {
             cout << i->first << ": " << decimalToHexadecimal(reg[i->second]);
             if (j % 5 == 0 || j == 32) cout << "\n";
-            else 
+            else
                 cout << ", ";
             j++;
         }
@@ -62,6 +62,7 @@ struct REGI {
     }
     int labelToAddr(string label) {
         // if label is integer return else hash
+        return 0;
     }
     void add() { }
     void sub() {  }
@@ -75,10 +76,90 @@ struct REGI {
     void addi() {  }
     void stat_update(string instruction) { cycle_cnt++; ins_cnt[ins_map[instruction]]++; }
 };
-
+bool isInteger(string s){
+    
+    for(int i = 0; i < s.length(); i++){
+        if('0'>s.at(i) && s.at(i)>'9'){return false;}
+    }return true;
+}
 //add line to memory
-void addToMemory(string line) {
-    cout << line << "\n"; // for debugging
+void addToMemory(string line, REGI rf, int line_number) {
+    vector<string> args;
+    long i = 0, len = line.length();
+    while(true){
+        string x = "";
+        while(i < len && (line.at(i) == ' ' || line.at(i) == ',' || line.at(i) == '(')){i++;}
+        while(i < len && line.at(i) != ' ' && line.at(i) != ',' && line.at(i) != ')' && line.at(i) != '('){x+=line[i];i++;}
+        while(i < len && (line.at(i) == ' ' || line.at(i) == ',' || line.at(i) == ')')){i++;}
+        if(x.length() != 0) args.push_back(x);
+        if(i == len){break;}
+    }
+    if(len==0){return;}
+    if(rf.ins_map.find(args[0])==rf.ins_map.end()){cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";}
+    int ins = rf.ins_map[args[0]];
+    memory[pc] = ins;
+    len = args.size();
+    //jump
+    if(ins == 6){
+        if(len != 2){
+            cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
+        }
+        else{
+            if(!isInteger(args[1])){cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";}
+            else{
+                memory[pc+1] = stoi(args[1]);
+            }
+        }
+    }
+    
+    //add sub mul slt
+    else if(ins == 0 || ins == 1 || ins == 2 || ins == 5){
+        if(len != 4){
+            cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
+        }
+        else{
+            if(rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end() || rf.reg_map.find(args[3]) == rf.reg_map.end()){
+                cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
+            }
+            else{
+                memory[pc+1]=rf.reg_map[args[1]];
+                memory[pc+2]=rf.reg_map[args[2]];
+                memory[pc+3]=rf.reg_map[args[3]];
+            }
+        }
+    }
+    //beq bne slt
+    else if(ins == 3 || ins == 4 || ins == 9){
+        if(len != 4){
+            cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
+        }
+        else{
+            if(rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end() || !isInteger(args[3])){
+                cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
+            }
+            else{
+                memory[pc+1]=rf.reg_map[args[1]];
+                memory[pc+2]=rf.reg_map[args[2]];
+                memory[pc+3]=stoi(args[3]);
+            }
+        }
+    }
+    else{
+        if(len != 4){
+            cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
+        }
+        else{
+            if(rf.reg_map.find(args[1]) == rf.reg_map.end() || !isInteger(args[2]) || rf.reg_map.find(args[3]) == rf.reg_map.end() ){
+                cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
+            }
+            else{
+                memory[pc+1]=rf.reg_map[args[1]];
+                memory[pc+2]=stoi(args[2]);
+                memory[pc+3]=rf.reg_map[args[3]];
+            }
+        }
+    }
+    pc+=4;
 }
 int main(int argc, const char* argv[]) {
     ifstream infile(file_path);
@@ -88,14 +169,19 @@ int main(int argc, const char* argv[]) {
         return 0;
     }
     string line;
+    REGI rf;
+    int line_number = 1;
     //read line by line
     while (getline(infile, line)) {
         //process and store each line in memory
-        addToMemory(line);
+        addToMemory(line, rf, line_number);
+        line_number++;
     }
+    for(int i = 1; i <= 12; i++){cout<<memory[i-1]<<" ";if(i%4==0){cout<<"\n";}}
     infile.close();
-    REGI rf;
-    rf.print_reg_file();
-    rf.execution_stats();
+    //cout<<decimalToHexadecimal(-2);
+    //rf.print_reg_file();
+    //rf.execution_stats();
+    //addToMemory("   add  $t1,  $t2 ( 345t )   ", rf);
     return 0;
 }
