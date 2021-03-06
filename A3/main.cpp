@@ -62,19 +62,24 @@ struct REGI {
     }
     int labelToAddr(string label) {
         // if label is integer return else hash
-        return 0;
+        bool flag = true;
+        for(int i = 0; i < label.length(); i++){
+            if('0'>label.at(i) && label.at(i)>'9'){flag = false;}
+        }
+        if(flag){return stoi(label);}
+        else{return reg_map[label];}
     }
-    void add() { }
-    void sub() {  }
-    void mul() {  }
-    void beq() { }
-    void bne() {  }
-    void slt() {  }
-    void j() {  }
-    void lw() { }
-    void sw() {  }
-    void addi() {  }
-    void stat_update(string instruction) { cycle_cnt++; ins_cnt[ins_map[instruction]]++; }
+    void add(int dest, int src1, int src2) { reg[dest] = reg[src1]+reg[src2]; }
+    void sub(int dest, int src1, int src2) { reg[dest] = reg[src1]-reg[src2]; }
+    void mul(int dest, int src1, int src2) { reg[dest] = reg[src1]*reg[src2]; }
+    void beq(int src1, int src2, int jumpby) {if(src1==src2) pc+=4*jumpby; }
+    void bne(int src1, int src2, int jumpby) {if(src1!=src2) pc+=4*jumpby; }
+    void slt(int dest, int src1, int src2) { reg[dest] = (reg[src1]<reg[src2])?1:0; }
+    void j(int jumpto) {pc = jumpto;}
+    void lw(int dest, int src, int offset) { reg[dest] = memory[src + 4*offset]; }
+    void sw(int src, int dest, int offset) { memory[dest + 4*offset] = reg[src]; }
+    void addi(int dest, int src, int adds) { reg[dest] = reg[src] + adds; }
+    void stat_update(int ins_code) { cycle_cnt++; ins_cnt[ins_code]++; }
 };
 bool isInteger(string s){
     
@@ -128,7 +133,7 @@ void addToMemory(string line, REGI rf, int line_number) {
             }
         }
     }
-    //beq bne slt
+    //beq bne addi
     else if(ins == 3 || ins == 4 || ins == 9){
         if(len != 4){
             cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
@@ -144,6 +149,7 @@ void addToMemory(string line, REGI rf, int line_number) {
             }
         }
     }
+    //sw lw
     else{
         if(len != 4){
             cout<<"SYNTAX ERROR: At line number: "<<line_number<<": "<<line<<"\n";
