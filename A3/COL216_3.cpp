@@ -13,6 +13,7 @@ string file_path = "sample.txt";
 int PC = 0;
 // partition between instructions and data
 int PARTITION = 0;
+int DATA_START = 699052;
 // memory available
 int memory[1048576];
 
@@ -43,7 +44,9 @@ bool isInteger(string s) {
     int len = s.length();
 
     if (len == 0) return false;
+
     for (int i = 0; i < len; i++) {
+        if (i == 0 && s.at(0) == '-') continue;
         if (s.at(i) < '0' || s.at(i) > '9') { return false; }
     }
     return true;
@@ -64,6 +67,10 @@ struct REGI {
                                  {"$t3", 11}, {"$t4", 12}, {"$t5", 13}, {"$t6", 14}, {"$t7", 15}, {"$s0", 16}, {"$s1", 17}, {"$s2", 18}, {"$s3", 19}, {"$s4", 20}, {"$s5", 21},
                                  {"$s6", 22}, {"$s7", 23}, {"$t8", 24}, {"$t9", 25}, {"$k0", 26}, {"$k1", 27}, {"$gp", 28}, {"$sp", 29}, {"$fp", 30}, {"$ra", 31} };
     
+    map<string, int> labels;
+
+    vector<pair<string, pair<int, int>>> label;
+
     // register parameters and clock cycle count
     int ins_cnt[10], reg[32];
     int cycle_cnt = 0;
@@ -126,6 +133,8 @@ struct REGI {
         }
         else {
             reg[dest] = sum;
+            if (dest == 0)
+                reg[dest] = 0;
             stat_update(0);
             return true;
         }
@@ -141,6 +150,8 @@ struct REGI {
         }
         else {
             reg[dest] = diff;
+            if (dest == 0)
+                reg[dest] = 0;
             stat_update(1);
             return true;
         }
@@ -156,14 +167,16 @@ struct REGI {
         }
         else {
             reg[dest] = prod;
+            if (dest == 0)
+                reg[dest] = 0;
             stat_update(2);
             return true;
         }
     }
 
-    bool beq(int src1, int src2, int jumpby) {
-        if (src1 == src2) {
-            PC += 4 + 4 * jumpby;
+    bool beq(int src1, int src2, int jumpto) {
+        if (reg[src1] == reg[src2]) {
+            PC = jumpto;
             if (PC > PARTITION || PC < 0) {
                 cout << "Warning: Program jumped to a non-instruction memory location. Program terminated abruptly!\n\n";
                 stat_update(3);
@@ -176,9 +189,9 @@ struct REGI {
         return true;
     }
 
-    bool bne(int src1, int src2, int jumpby) {
-        if (src1 != src2) {
-            PC += 4 + 4 * jumpby;
+    bool bne(int src1, int src2, int jumpto) {
+        if (reg[src1] != reg[src2]) {
+            PC = jumpto;
             if (PC > PARTITION || PC < 0) {
                 cout << "Warning: Program jumped to a non-instruction memory location. Program terminated abruptly!\n\n";
                 stat_update(4);
@@ -193,11 +206,13 @@ struct REGI {
 
     void slt(int dest, int src1, int src2) {
         reg[dest] = (reg[src1] < reg[src2]) ? 1 : 0;
+        if (dest == 0)
+            reg[dest] = 0;
         stat_update(5);
     }
 
     bool j(int jumpto) {
-        PC = 4 * jumpto;
+        PC = jumpto;
         stat_update(6);
         if (PC > PARTITION) {
             cout << "Warning: Program jumped to a non-instruction memory location. Program terminated abruptly!\n\n";
@@ -210,27 +225,45 @@ struct REGI {
 
     bool lw(int dest, int offset, int src) {
         // check if address is valid
-        int addr = offset + src;
-        if (addr < PARTITION || addr >= 1048576) {
+        int addr = offset + reg[src] + DATA_START;
+        if (addr >= 1048576 || addr < DATA_START) {
             // invalid address, error
             cout << "Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
             execution_stats();
             return false;
         }
+        else {
+            if (addr % 4 != 0) {
+                // address is not word aligned, error
+                cout << "Error: Memory address is not word-aligned. Invalid load operation. Program Terminating!\n\n";
+                execution_stats();
+                return false;
+            }
+        }
         // else
         reg[dest] = memory[addr];
+        if (dest == 0)
+            reg[dest] = 0;
         stat_update(7);
         return true;
     }
 
     bool sw(int src, int offset, int dest) {
         // check if address is valid
-        int addr = offset + dest;
-        if (addr < PARTITION || addr >= 1048576) {
+        int addr = offset + reg[dest] + DATA_START;
+        if (addr < DATA_START || addr >= 1048576) {
             // invalid address, error
             cout << "Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
             execution_stats();
             return false;
+        }
+        else {
+            if (addr % 4 != 0) {
+                // address is not word aligned, error
+                cout << "Error: Memory address is not word-aligned. Invalid store operation. Program Terminating!\n\n";
+                execution_stats();
+                return false;
+            }
         }
         // else
         memory[addr] = reg[src];
@@ -248,6 +281,8 @@ struct REGI {
         }
         else {
             reg[dest] = sum;
+            if (dest == 0)
+                reg[dest] = 0;
             stat_update(9);
             return true;
         }
@@ -520,6 +555,68 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
 }
 
 
+bool validId(string label) {
+    int len = label.length(), i = 0;
+    if (len == 0) return false;
+    else {
+        if (isalpha(label.at(0)) || label.at(0) == '_') {
+            i++;
+            while (i < len && (isalpha(label.at(i)) || isdigit(label.at(i)) || label.at(i) == ' ')) i++;
+            if (i != len)
+                return false;
+            else return true;
+        }
+        else return false;
+    }
+}
+
+pair<pair<string, string>, pair<bool, bool>> checkIfLabel(string line, int line_number) {
+    int len = line.length(), i = 0;
+    string label = "";
+    // parse initial white spaces
+    while (i < len && line.at(i) == ' ') i++;
+    if (i == len)
+        // no label
+        return make_pair(make_pair(label, line), make_pair(false, true));
+    // parse label
+    while (i < len && line.at(i) != ' ') {
+        label = label + line[i];
+        i++;
+    }
+    //parse any extra white spaces
+    while (i < len && line.at(i) == ' ') i++;
+    if (i == len)
+        // no label
+        return make_pair(make_pair(label, line), make_pair(false, true));
+    // else
+    // check if there is a colon
+    if (line.at(i) == ':') {
+        i++;
+        // can be a label
+        // check if it is a valid identifier
+        bool flag = validId(label);
+        if (!flag) {
+            // syntax error
+            cout << "SYNTAX ERROR (Illegal Label): At line number: " << line_number << ": " << line << "\n";
+            return make_pair(make_pair(label, line), make_pair(false, false));
+        }
+        else {
+            // valid label
+            // make remaining string
+            string line_r = "";
+            while (i < len) {
+                line_r = line_r + line[i];
+                i++;
+            }
+            // return
+            return make_pair(make_pair(label, line_r), make_pair(true, true));
+        }
+    }
+    // else it is not a label
+    return make_pair(make_pair(label, line), make_pair(false, true));
+
+}
+
 //add line to memory
 bool addToMemory(string line, REGI rf, int line_number) {
 
@@ -527,8 +624,24 @@ bool addToMemory(string line, REGI rf, int line_number) {
     vector<string> args;
     bool flag;
     int len;
-
-    pair<vector<string>, bool> Pair = parseInstruction(line);
+    pair<pair<string, string>, pair<bool, bool>> label = checkIfLabel(line, line_number);
+    if (label.second.second == false)
+        return false;
+    else {
+        if (label.second.first == true) {
+            // check if the label is already there
+            if (rf.labels.find(label.first.first) != rf.labels.end()) {
+                // syntax error
+                cout << "Error: Same label used to represent different addresses.\n Label repeated: " << label.first.first << ": at line number: " << line_number << "\n";
+                return false;
+            }
+            else {
+                // add label to map
+                rf.labels.insert({ label.first.first, PC });
+            }
+        }
+    }
+    pair<vector<string>, bool> Pair = parseInstruction(label.first.second);
     // store arguments
     args = Pair.first;
     // store whether or not there was a syntax error
@@ -569,9 +682,13 @@ bool addToMemory(string line, REGI rf, int line_number) {
                 }
                 else {
                     if (!isInteger(args[1])) { 
-                        // invalid jump address
-                        cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n"; 
-                        return false;
+                        if (!validId(args[1])) {
+                            // not a valid label address
+                            cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                            return false;
+                        }
+                        // else, it is a valid id, push it
+                        rf.label.push_back(make_pair(args[1], make_pair(PC + 1, line_number)));
                     }
                     else {
                         int addr = stoi(args[1]);
@@ -581,7 +698,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
                             return false;
                         }
                         // else store the value in memory
-                        memory[PC + 1] = addr;
+                        memory[PC + 1] = 4 * addr;
                     }
                 }
             }
@@ -617,26 +734,64 @@ bool addToMemory(string line, REGI rf, int line_number) {
                     return false;
                 }
                 else {
-                    // check if any of the register used is invalid
-                    // also check if the last argument is an immediate or not
-                    if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end() || !isInteger(args[3])) {
-                        // invalid arguments, syntax error
-                        cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
-                        return false;
-                    }
-                    else {
-                        int immediate = stoi(args[3]);
-                        
-                        // raise overflow error if necessary
-                        if (immediate < -32768 || immediate > 32767) {
-                            cout << "Immediate Overflow ERROR: At line number: " << line_number << ": " << "\n";
+                    if (ins == 9) {
+                        // check if any of the register used is invalid
+                        // also check if the last argument is an immediate or not
+                        if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end() || !isInteger(args[3])) {
+                            // invalid arguments, syntax error
+                            cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
                             return false;
                         }
-                        // else
-                        // store register numbers and immediate in memory
-                        memory[PC + 1] = rf.reg_map[args[1]];
-                        memory[PC + 2] = rf.reg_map[args[2]];
-                        memory[PC + 3] = immediate;
+                        else {
+                            int immediate = stoi(args[3]);
+
+                            // raise overflow error if necessary
+                            if (immediate < -32768 || immediate > 32767) {
+                                cout << "Immediate Overflow ERROR: At line number: " << line_number << ": " << "\n";
+                                return false;
+                            }
+                            // else
+                            // store register numbers and immediate in memory
+                            memory[PC + 1] = rf.reg_map[args[1]];
+                            memory[PC + 2] = rf.reg_map[args[2]];
+                            memory[PC + 3] = immediate;
+                        }
+                    }
+                    else {
+                        // bne or beq
+                        // check if any of the register used is invalid
+                        if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end()) {
+                            // invalid arguments, syntax error
+                            cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                            return false;
+                        }
+                        else {
+                            // store register
+                            memory[PC + 1] = rf.reg_map[args[1]];
+                            memory[PC + 2] = rf.reg_map[args[2]];
+                            if (isInteger(args[3])) {
+                                int immediate = stoi(args[3]);
+
+                                // raise overflow error if necessary
+                                if (immediate < -32768 || immediate > 32767) {
+                                    cout << "Immediate Overflow ERROR: At line number: " << line_number << ": " << "\n";
+                                    return false;
+                                }
+                                // else
+                                // store immediate in memory
+                                memory[PC + 3] = PC + 4 + 4 * immediate;
+                            }
+                            else {
+                                if (validId(args[3])) {
+                                    rf.label.push_back(make_pair(args[3], make_pair(PC + 3, line_number)));
+                                }
+                                else {
+                                    // invalid label, raise error
+                                    cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                                    return false;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -678,6 +833,28 @@ bool addToMemory(string line, REGI rf, int line_number) {
     return true;
 }
 
+bool linker(REGI rf) {
+    
+    int len = rf.label.size();
+    
+    for (int i = 0; i < len; i++) {
+    
+        pair<string, pair<int, int>> label = rf.label[i];
+        // check if label is actually defined
+        if (rf.labels.find(label.first) == rf.labels.end()) {
+            // illegal label, raise error
+            cout << "Linking Error: Unable to resolve label used on line: " << label.second.second << "\n";
+            return false;
+        }
+        else {
+            // resolve label
+            int label_loc = rf.labels[label.first];
+            memory[label.second.first] = label_loc;
+        }
+
+    }
+    return true;
+}
 
 int main(int argc, const char* argv[]) {
 
@@ -703,6 +880,10 @@ int main(int argc, const char* argv[]) {
     while (getline(infile, line)) {
 
         //process and store each instruction in memory
+        if (PC >= DATA_START) {
+            cout << "Error: Instruction memory overflow. Program terminating!\n";
+            return 0;
+        }
         flag = addToMemory(line, rf, line_number);
 
         // check if there was some error
@@ -718,6 +899,12 @@ int main(int argc, const char* argv[]) {
     // initialize PARTITION to PC 
     // PARTITION stores the starting address of data section
     PARTITION = PC;
+
+    // link labels used in program
+    flag = linker(rf);
+
+    if (!flag)
+        return 0;
 
     // re-initialize PC to 0 for execution
     PC = 0;
