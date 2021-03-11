@@ -7,7 +7,7 @@
 
 using namespace std;
 
-string file_path = "sample.txt";
+string file_path = "InvalidOffset.txt";
 
 // program counter
 int PC = 0;
@@ -113,15 +113,6 @@ struct REGI {
         }
     }
 
-    
-    //int labelToAddr(string label) {
-
-    //    // if label is integer return else hash
-    //    if (isInteger(label))
-    //        return stoi(label);
-    //    else
-    //        return reg_map[label];
-    //}
 
     bool add(int dest, int src1, int src2) {
         long long sum = (long long)reg[src1] + (long long)reg[src2];
@@ -295,7 +286,7 @@ struct REGI {
 };
 
 
-bool simulator(REGI rf) {
+bool simulator(REGI &rf) {
 
     int ins_code;
     bool flag;
@@ -383,14 +374,14 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
     string code = "", arg1 = "", arg2 = "", arg3 = "";
   
     // read all initial white spaces
-    while (i < len && instruction.at(i) == ' ') i++;
+    while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
     // return if there are only white spaces with true (no error)
     if (i == len)
         return make_pair(args, true);
     // else
     else {
         // read all non-whitespace, non-comma characters, store them in code
-        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',') {
+        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '\t') {
             code = code + instruction[i];
             i++;
         }
@@ -403,14 +394,14 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
             // push back the first argument
             args.push_back(code);
             // read all immediate white spaces
-            while (i < len && instruction.at(i) == ' ') i++;
+            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
             // if there are no more arguments, return error
             if (i == len)
                 return make_pair(args, false);
             // else
             else {
                 // read all non-whitespace, non-comma characters, store them in arg1                 
-                while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',') {
+                while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '\t') {
                     arg1 = arg1 + instruction[i];
                     i++;
                 }
@@ -422,7 +413,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                     // push back the second argument
                     args.push_back(arg1);
                     // read all immediate white spaces
-                    while (i < len && instruction.at(i) == ' ') i++;
+                    while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                     // if there are no more arguments, then it can be jump instruction, so return true
                     if (i == len)
                         return make_pair(args, true);
@@ -431,13 +422,13 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                         // read comma if any
                         if (instruction.at(i) == ',') i++;
                         // read all inter-mediary white spaces
-                        while (i < len && instruction.at(i) == ' ') i++;
+                        while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                         // if there are no more arguments, return error
                         if (i == len)
                             return make_pair(args, false);
                         // else
                         // read all non-white space, non-comma, non-LPAREN characters, store them in arg2
-                        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '(') {
+                        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '('  && instruction.at(i) != '\t') {
                             arg2 = arg2 + instruction[i];
                             i++;
                         }
@@ -449,7 +440,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                             // push back the third argument
                             args.push_back(arg2);
                             // read immediate white spaces
-                            while (i < len && instruction.at(i) == ' ') i++;
+                            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                             // if there are no more arguments, return error 
                             if (i == len)
                                 return make_pair(args, false);
@@ -459,12 +450,12 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                                 if (instruction.at(i) == ',') {
                                     i++;
                                     // read inter-mediary white spaces
-                                    while (i < len && instruction.at(i) == ' ') i++;
+                                    while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                                     // if there are no more arguments, return error
                                     if (i == len)
                                         return make_pair(args, false);
                                     // read all non-whitespace, non-comma characters, store them in arg3
-                                    while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',') {
+                                    while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '\t') {
                                         arg3 = arg3 + instruction[i];
                                         i++;
                                     }
@@ -476,7 +467,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                                         // push back the fourth argument
                                         args.push_back(arg3);
                                         // read trailing white spaces
-                                        while (i < len && instruction.at(i) == ' ') i++;
+                                        while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                                         // if instruction has ended, then return true
                                         if (i == len)
                                             return make_pair(args, true);
@@ -489,13 +480,13 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                                     if (instruction.at(i) == '(') {
                                         i++;
                                         // read any inter-mediary white spaces
-                                        while (i < len && instruction.at(i) == ' ') i++;
+                                        while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                                         // if there are no more arguments, return error
                                         if (i == len)
                                             return make_pair(args, false);
                                         // else
                                         // read all non-whitespace, non-RPAREN characters, store them in arg3
-                                        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ')') {
+                                        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ')' && instruction.at(i) != '\t') {
                                             arg3 = arg3 + instruction[i];
                                             i++;
                                         }
@@ -507,13 +498,14 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                                             // push back the fourth argument
                                             args.push_back(arg3);
                                             // read any trailing white spaces
-                                            while (i < len && instruction.at(i) == ' ') i++;
+                                            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                                             // if the next character is not a RPAREN, return error
                                             if (instruction.at(i) != ')')
                                                 return make_pair(args, false);
+                                            else i++;
                                             // else
                                             // read any trailing white spaces
-                                            while (i < len && instruction.at(i) == ' ') i++;
+                                            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                                             // if the instruction is completely parsed, return true, else return false
                                             if (i == len)
                                                 return make_pair(args, true);
@@ -523,7 +515,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                                     // neither LPAREN, nor a comma
                                     else {
                                         // read all non-whitespace characters, store them in arg3
-                                        while (i < len && instruction.at(i) != ' ') {
+                                        while (i < len && (instruction.at(i) != ' ' || instruction.at(i) == '\t')) {
                                             arg3 = arg3 + instruction[i];
                                             i++;
                                         }
@@ -535,7 +527,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                                             // push back the fourth argument
                                             args.push_back(arg3);
                                             // read trailing white spaces, if any
-                                            while (i < len && instruction.at(i) == ' ') {
+                                            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) {
                                                 i++;
                                             }
                                             // if the instruction is completely passed, return true, else return false
@@ -561,7 +553,7 @@ bool validId(string label) {
     else {
         if (isalpha(label.at(0)) || label.at(0) == '_') {
             i++;
-            while (i < len && (isalpha(label.at(i)) || isdigit(label.at(i)) || label.at(i) == ' ')) i++;
+            while (i < len && (isalpha(label.at(i)) || isdigit(label.at(i)) || label.at(i) == '_')) i++;
             if (i != len)
                 return false;
             else return true;
@@ -574,17 +566,17 @@ pair<pair<string, string>, pair<bool, bool>> checkIfLabel(string line, int line_
     int len = line.length(), i = 0;
     string label = "";
     // parse initial white spaces
-    while (i < len && line.at(i) == ' ') i++;
+    while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
     if (i == len)
         // no label
         return make_pair(make_pair(label, line), make_pair(false, true));
     // parse label
-    while (i < len && line.at(i) != ' ') {
+    while (i < len && line.at(i) != ' ' && line.at(i) != ':' && line.at(i) != '\t') {
         label = label + line[i];
         i++;
     }
     //parse any extra white spaces
-    while (i < len && line.at(i) == ' ') i++;
+    while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
     if (i == len)
         // no label
         return make_pair(make_pair(label, line), make_pair(false, true));
@@ -618,7 +610,7 @@ pair<pair<string, string>, pair<bool, bool>> checkIfLabel(string line, int line_
 }
 
 //add line to memory
-bool addToMemory(string line, REGI rf, int line_number) {
+bool addToMemory(string line, REGI &rf, int line_number) {
 
     // args will be used to store the instruction arguments
     vector<string> args;
@@ -632,7 +624,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
             // check if the label is already there
             if (rf.labels.find(label.first.first) != rf.labels.end()) {
                 // syntax error
-                cout << "Error: Same label used to represent different addresses.\n Label repeated: " << label.first.first << ": at line number: " << line_number << "\n";
+                cout << "Error: Same label used to represent different addresses.\nLabel repeated: " << label.first.first << ": at line number: " << line_number << "\n";
                 return false;
             }
             else {
@@ -649,7 +641,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
 
     if (!flag) {
         // there was a syntax error
-        cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+        cout << "SYNTAX ERROR 1: At line number: " << line_number << ": " << line << "\n";
         return false;
     }
     else {
@@ -664,7 +656,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
             // check if the instruction is valid or not
             if (rf.ins_map.find(args[0]) == rf.ins_map.end()) { 
                 // invalid instruction
-                cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n"; 
+                cout << "SYNTAX ERROR 2: At line number: " << line_number << ": " << line << "\n"; 
                 return false;
             }
             // else store the instruction in memory
@@ -677,14 +669,14 @@ bool addToMemory(string line, REGI rf, int line_number) {
             if (ins == 6) {
                 if (len != 2) {
                     // as jump should have only 2 arguments
-                    cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                    cout << "SYNTAX ERROR 3: At line number: " << line_number << ": " << line << "\n";
                     return false;
                 }
                 else {
                     if (!isInteger(args[1])) { 
                         if (!validId(args[1])) {
                             // not a valid label address
-                            cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                            cout << "SYNTAX ERROR 4: At line number: " << line_number << ": " << line << "\n";
                             return false;
                         }
                         // else, it is a valid id, push it
@@ -694,7 +686,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
                         int addr = stoi(args[1]);
                         if (addr < 0 || addr >= 67108864) { 
                             // address starts from 0 and max integer that can be stored is 2^26 - 1
-                            cout << "Invalid Address ERROR: At line number: " << line_number << ": " << "\n"; 
+                            cout << "SYNTAX ERROR 5: At line number: " << line_number << ": " << "\n"; 
                             return false;
                         }
                         // else store the value in memory
@@ -707,14 +699,14 @@ bool addToMemory(string line, REGI rf, int line_number) {
             else if (ins == 0 || ins == 1 || ins == 2 || ins == 5) {
                 if (len != 4) {
                     // add sub mul slt require 4 arguments each
-                    cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                    cout << "SYNTAX ERROR 6: At line number: " << line_number << ": " << line << "\n";
                     return false;
                 }
                 else {
                     // check if any of the register used is invalid
                     if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end() || rf.reg_map.find(args[3]) == rf.reg_map.end()) {
                         // invalid register used, syntax error
-                        cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                        cout << "SYNTAX ERROR 7: At line number: " << line_number << ": " << line << "\n";
                         return false;
                     }
                     else {
@@ -730,7 +722,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
             else if (ins == 3 || ins == 4 || ins == 9) {
                 if (len != 4) {
                     // beq bne addi require 4 arguments each
-                    cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                    cout << "SYNTAX ERROR 8: At line number: " << line_number << ": " << line << "\n";
                     return false;
                 }
                 else {
@@ -739,7 +731,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
                         // also check if the last argument is an immediate or not
                         if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end() || !isInteger(args[3])) {
                             // invalid arguments, syntax error
-                            cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                            cout << "SYNTAX ERROR 9: At line number: " << line_number << ": " << line << "\n";
                             return false;
                         }
                         else {
@@ -762,7 +754,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
                         // check if any of the register used is invalid
                         if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end()) {
                             // invalid arguments, syntax error
-                            cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                            cout << "SYNTAX ERROR 10: At line number: " << line_number << ": " << line << "\n";
                             return false;
                         }
                         else {
@@ -787,7 +779,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
                                 }
                                 else {
                                     // invalid label, raise error
-                                    cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                                    cout << "SYNTAX ERROR 11: At line number: " << line_number << ": " << line << "\n";
                                     return false;
                                 }
                             }
@@ -800,14 +792,14 @@ bool addToMemory(string line, REGI rf, int line_number) {
             else {
                 if (len != 4) {
                     // sw lw require 4 arguments each
-                    cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                    cout << "SYNTAX ERROR 12: At line number: " << line_number << ": " << line << "\n";
                     return false;
                 }
                 else {
                     // check if the registers are valid or not, also check if the second argument is an immediate or not
                     if (rf.reg_map.find(args[1]) == rf.reg_map.end() || !isInteger(args[2]) || rf.reg_map.find(args[3]) == rf.reg_map.end()) {
                         // invalid arguments, syntax error
-                        cout << "SYNTAX ERROR: At line number: " << line_number << ": " << line << "\n";
+                        cout << "SYNTAX ERROR 13: At line number: " << line_number << ": " << line << "\n";
                         return false;
                     }
                     else {
@@ -833,7 +825,7 @@ bool addToMemory(string line, REGI rf, int line_number) {
     return true;
 }
 
-bool linker(REGI rf) {
+bool linker(REGI &rf) {
     
     int len = rf.label.size();
     
