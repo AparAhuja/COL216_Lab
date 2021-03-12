@@ -768,6 +768,12 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                         memory[PC + 1] = rf.reg_map[args[1]];
                         memory[PC + 2] = rf.reg_map[args[2]];
                         memory[PC + 3] = rf.reg_map[args[3]];
+                        int temp = memory[PC+1];
+                        if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
+                        //temp = memory[PC+2];
+                        //if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false;
+                        //temp = memory[PC+3];
+                        //if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false;
                     }
                 }
             }
@@ -801,6 +807,11 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                             memory[PC + 1] = rf.reg_map[args[1]];
                             memory[PC + 2] = rf.reg_map[args[2]];
                             memory[PC + 3] = immediate;
+//                             int temp = memory[PC+1];
+//                             if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
+//                             temp = memory[PC+2];
+//                             if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
+                        
                         }
                     }
                     else {
@@ -815,6 +826,11 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                             // store register
                             memory[PC + 1] = rf.reg_map[args[1]];
                             memory[PC + 2] = rf.reg_map[args[2]];
+                            int temp = memory[PC+1];
+                            if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
+                            temp = memory[PC+2];
+                            if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
+                        
                             if (isInteger(args[3])) {
                                 long long immediate = stoi(args[3]);
 
@@ -868,6 +884,9 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                         memory[PC + 1] = rf.reg_map[args[1]];
                         memory[PC + 2] = immediate;
                         memory[PC + 3] = rf.reg_map[args[3]];
+                        int temp = memory[PC+1];
+                        if(ins_map[args[0]] == 7 &&(temp == 1 || (temp>=26 && temp!31))) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
+                        
                     }
                 }
             }
