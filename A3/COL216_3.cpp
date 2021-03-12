@@ -7,14 +7,18 @@
 
 using namespace std;
 
-string file_path = "InvalidOffset.txt";
+// default file path used
+string file_path = "sample.txt";
 
-// program counter
+// program counter (starts at 0)
 int PC = 0;
-// partition between instructions and data
+// instruction end address
 int PARTITION = 0;
+// starting address of data section
+
 int DATA_START = 699052;
-// memory available
+// memory available (2 ^ 20 bytes)
+
 int memory[1048576];
 
 
@@ -25,7 +29,7 @@ string decimalToHexadecimal(long long a) {
     // int to hex map
     map<int, string> hex{ {0,"0"},{1,"1"},{2,"2"},{3,"3"},{4,"4"},{5,"5"},{6,"6"},{7,"7"},{8,"8"},{9,"9"},{10,"a"},{11,"b"},{12,"c"},{13,"d"},{14,"e"},{15,"f"} };
 
-    // 2's complement representation
+    // 2's complement representation (add 2 ^ 32 to negative numbers)
     if (a < 0) { a += 4294967296; }
 
     for (int i = 0; i < 8; i++) {
@@ -46,18 +50,48 @@ bool isInteger(string s) {
     if (len == 0) return false;
 
     for (int i = 0; i < len; i++) {
-        if (i == 0 && s.at(0) == '-') continue;
-        if (s.at(i) < '0' || s.at(i) > '9') { return false; }
+
+        if (i == 0 && s.at(0) == '-') 
+            // might be negative number
+            continue;
+        if (s.at(i) < '0' || s.at(i) > '9') { 
+            // not an integer
+            return false;
+        }
+    
     }
+    // is an integer
     return true;
 }
 
 
-struct REGI {
+// checks if the label used is a valid identifier or not
+bool validId(string label) {
     
-    //INSTRUCTION COUNT
-    //int ins_cnt_add, ins_cnt_sub...
-    // check lower case and upper case
+    int len = label.length(), i = 0;
+    
+    // empty string is not a valid id
+    if (len == 0) return false;
+    else {
+        
+        if (isalpha(label.at(0)) || label.at(0) == '_') {
+            i++;
+            while (i < len && (isalpha(label.at(i)) || isdigit(label.at(i)) || label.at(i) == '_')) i++;
+            if (i != len)
+                // some invalid character is present in the label
+                return false;
+            else 
+                // valid id
+                return true;
+        }
+        // not a valid id
+        else return false;
+    }
+}
+
+
+// Register and Instruction structure
+struct REGI {
 
     // instruction code map
     map<string, int> ins_map = { {"add", 0}, {"sub", 1}, {"mul", 2},{"beq", 3},{"bne", 4},{"slt", 5},{"j", 6},{"lw", 7},{"sw", 8},{"addi", 9} };
@@ -67,8 +101,11 @@ struct REGI {
                                  {"$t3", 11}, {"$t4", 12}, {"$t5", 13}, {"$t6", 14}, {"$t7", 15}, {"$s0", 16}, {"$s1", 17}, {"$s2", 18}, {"$s3", 19}, {"$s4", 20}, {"$s5", 21},
                                  {"$s6", 22}, {"$s7", 23}, {"$t8", 24}, {"$t9", 25}, {"$k0", 26}, {"$k1", 27}, {"$gp", 28}, {"$sp", 29}, {"$fp", 30}, {"$ra", 31} };
     
+    // used to store labels used in program along with their corresponding address
     map<string, int> labels;
 
+    // vector that contains all the labels encountered in instructions during compile time
+    // these labels are resolved during linking time
     vector<pair<string, pair<int, int>>> label;
 
     // register parameters and clock cycle count
@@ -78,9 +115,11 @@ struct REGI {
     // constructor for initialization
     REGI() {
 
+        // initialize registers with 0
         for (int i = 0; i < 32; i++)
             reg[i] = 0;
 
+        // initialize instruction count with 0
         for (int i = 0; i < 10; i++)
             ins_cnt[i] = 0;
     }
@@ -116,6 +155,7 @@ struct REGI {
 
     bool add(int dest, int src1, int src2) {
         long long sum = (long long)reg[src1] + (long long)reg[src2];
+        stat_update(0);
 
         if (sum > 2147483647 || sum < -2147483648) {
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
@@ -124,15 +164,16 @@ struct REGI {
         }
         else {
             reg[dest] = sum;
+            // check if it is the zero register
             if (dest == 0)
                 reg[dest] = 0;
-            stat_update(0);
             return true;
         }
     }
 
     bool sub(int dest, int src1, int src2) {
         long long diff = (long long)reg[src1] - (long long)reg[src2];
+        stat_update(1);
 
         if (diff > 2147483647 || diff < -2147483648) {
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
@@ -141,15 +182,16 @@ struct REGI {
         }
         else {
             reg[dest] = diff;
+            // check if it is the zero register
             if (dest == 0)
                 reg[dest] = 0;
-            stat_update(1);
             return true;
         }
     }
 
     bool mul(int dest, int src1, int src2) {
         long long prod = (long long)reg[src1] * (long long)reg[src2];
+        stat_update(2);
 
         if (prod > 2147483647 || prod < -2147483648) {
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
@@ -158,9 +200,9 @@ struct REGI {
         }
         else {
             reg[dest] = prod;
+            // check if it is the zero register
             if (dest == 0)
                 reg[dest] = 0;
-            stat_update(2);
             return true;
         }
     }
@@ -197,6 +239,7 @@ struct REGI {
 
     void slt(int dest, int src1, int src2) {
         reg[dest] = (reg[src1] < reg[src2]) ? 1 : 0;
+        // check if it is the zero register
         if (dest == 0)
             reg[dest] = 0;
         stat_update(5);
@@ -216,7 +259,7 @@ struct REGI {
 
     bool lw(int dest, int offset, int src) {
         // check if address is valid
-        int addr = offset + reg[src] + DATA_START;
+        long long addr = (long long)offset + (long long)reg[src] + (long long)DATA_START;
         if (addr >= 1048576 || addr < DATA_START) {
             // invalid address, error
             cout << "Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
@@ -233,6 +276,7 @@ struct REGI {
         }
         // else
         reg[dest] = memory[addr];
+        // check if it is the zero register
         if (dest == 0)
             reg[dest] = 0;
         stat_update(7);
@@ -241,7 +285,7 @@ struct REGI {
 
     bool sw(int src, int offset, int dest) {
         // check if address is valid
-        int addr = offset + reg[dest] + DATA_START;
+        long long addr = (long long)offset + (long long)reg[dest] + (long long)DATA_START;
         if (addr < DATA_START || addr >= 1048576) {
             // invalid address, error
             cout << "Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
@@ -264,6 +308,7 @@ struct REGI {
 
     bool addi(int dest, int src, int adds) {
         long long sum = (long long)reg[src] + (long long)adds;
+        stat_update(9);
 
         if (sum > 2147483647 || sum < -2147483648) {
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
@@ -272,9 +317,9 @@ struct REGI {
         }
         else {
             reg[dest] = sum;
+            // check if it is the zero register
             if (dest == 0)
                 reg[dest] = 0;
-            stat_update(9);
             return true;
         }
     }
@@ -286,65 +331,69 @@ struct REGI {
 };
 
 
+// this function simulates the execution of MIPS program
 bool simulator(REGI &rf) {
 
     int ins_code;
     bool flag;
 
+    // while program counter is less than PARTITION
     while (PC < PARTITION) {
+        
         ins_code = memory[PC];
+        
         switch (ins_code) {
-
+            // add
             case 0:
                 flag = rf.add(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 if (flag) PC += 4;
                 else return flag;
                 break;
-
+            // sub
             case 1:
                 flag = rf.sub(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 if (flag) PC += 4;
                 else return flag;
                 break;
-
+           // mul
             case 2:
                 flag = rf.mul(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 if (flag) PC += 4;
                 else return flag;
                 break;
-
+            // beq
             case 3:
                 flag = rf.beq(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 if (!flag) return flag;
                 break;
-
+            // bne
             case 4:
                 flag = rf.bne(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 if (!flag) return flag;
                 break;
-
+            // slt
             case 5:
                 rf.slt(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 PC += 4;
                 break;
-
+            // j
             case 6:
                 flag = rf.j(memory[PC + 1]);
                 if (!flag) return flag;
                 break;
-
+            // lw
             case 7:
                 flag = rf.lw(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 if (flag) PC += 4;
                 else return flag;
                 break;
-
+            // sw
             case 8:
                 flag = rf.sw(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 if (flag) PC += 4;
                 else return flag;
                 break;
-                
+            // addi                
             case 9:
                 flag = rf.addi(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
                 if (flag) PC += 4;
@@ -355,22 +404,75 @@ bool simulator(REGI &rf) {
         rf.print_reg_file();
     }
 
-    // PC = PARTITION, so execution is complete
+    // PC = PARTITION, so execution is complete (successful)
     rf.execution_stats();
     return true;
 }
 
+
+// checks if a given line of code represents a MIPS label
+pair<pair<string, string>, pair<bool, bool>> checkIfLabel(string line, int line_number) {
+    
+    int len = line.length(), i = 0;
+    string label = "";
+    
+    // parse initial white spaces
+    while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
+    if (i == len)
+        // no label
+        return make_pair(make_pair(label, line), make_pair(false, true));
+    
+    // parse label
+    while (i < len && line.at(i) != ' ' && line.at(i) != ':' && line.at(i) != '\t') {
+        label = label + line[i];
+        i++;
+    }
+    //parse any extra white spaces
+    while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
+    if (i == len)
+        // no label
+        return make_pair(make_pair(label, line), make_pair(false, true));
+    
+    // else
+    // check if there is a colon
+    if (line.at(i) == ':') {
+        i++;
+        // can be a label
+        // check if it is a valid identifier
+        bool flag = validId(label);
+        if (!flag) {
+            // syntax error
+            cout << "SYNTAX ERROR (Illegal Label): At line number: " << line_number << ": " << line << "\n";
+            return make_pair(make_pair(label, line), make_pair(false, false));
+        }
+        else {
+            // valid label
+            // make remaining string
+            string line_r = "";
+            while (i < len) {
+                line_r = line_r + line[i];
+                i++;
+            }
+            // return
+            return make_pair(make_pair(label, line_r), make_pair(true, true));
+        }
+    }
+    // else it is not a label
+    return make_pair(make_pair(label, line), make_pair(false, true));
+
+}
+
+
+// function used to parse a line of MIPS code (not containg any label) and generate appropriate arguments
 pair<vector<string>, bool> parseInstruction(string instruction) {
 
     // args stores instruction arguments
     vector<string> args;
     // len stores length of the instruction
     int len = instruction.length();
-    int arg_count = 0;
     // instruction counter
     int i = 0;
-    bool isInstruction = false;
-    // maximum of 4 arguments can be present in an instruction
+    // maximum of 4 arguments can be present in a valid instruction
     string code = "", arg1 = "", arg2 = "", arg3 = "";
   
     // read all initial white spaces
@@ -378,6 +480,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
     // return if there are only white spaces with true (no error)
     if (i == len)
         return make_pair(args, true);
+    
     // else
     else {
         // read all non-whitespace, non-comma characters, store them in code
@@ -389,17 +492,21 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
         if (code.length() == 0) {
             return make_pair(args, false);
         }
+        
         // else
         else {
             // push back the first argument
             args.push_back(code);
+            
             // read all immediate white spaces
             while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
             // if there are no more arguments, return error
             if (i == len)
                 return make_pair(args, false);
+            
             // else
             else {
+
                 // read all non-whitespace, non-comma characters, store them in arg1                 
                 while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '\t') {
                     arg1 = arg1 + instruction[i];
@@ -412,16 +519,18 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                 else {
                     // push back the second argument
                     args.push_back(arg1);
+                    
                     // read all immediate white spaces
                     while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                     // if there are no more arguments, then it can be jump instruction, so return true
                     if (i == len)
                         return make_pair(args, true);
+                    
                     // else
                     else {
                         // read comma if any
                         if (instruction.at(i) == ',') i++;
-                        // read all inter-mediary white spaces
+                        // read all intermediary white spaces
                         while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                         // if there are no more arguments, return error
                         if (i == len)
@@ -435,6 +544,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                         // return error if arg2 is still empty
                         if (arg2.length() == 0)
                             return make_pair(args, false);
+                        
                         // else
                         else {
                             // push back the third argument
@@ -530,7 +640,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                                             while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) {
                                                 i++;
                                             }
-                                            // if the instruction is completely passed, return true, else return false
+                                            // if the instruction is completely parsed, return true, else return false
                                             if (i == len)
                                                 return make_pair(args, true);
                                             else return make_pair(args, false);
@@ -547,83 +657,27 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
 }
 
 
-bool validId(string label) {
-    int len = label.length(), i = 0;
-    if (len == 0) return false;
-    else {
-        if (isalpha(label.at(0)) || label.at(0) == '_') {
-            i++;
-            while (i < len && (isalpha(label.at(i)) || isdigit(label.at(i)) || label.at(i) == '_')) i++;
-            if (i != len)
-                return false;
-            else return true;
-        }
-        else return false;
-    }
-}
 
-pair<pair<string, string>, pair<bool, bool>> checkIfLabel(string line, int line_number) {
-    int len = line.length(), i = 0;
-    string label = "";
-    // parse initial white spaces
-    while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
-    if (i == len)
-        // no label
-        return make_pair(make_pair(label, line), make_pair(false, true));
-    // parse label
-    while (i < len && line.at(i) != ' ' && line.at(i) != ':' && line.at(i) != '\t') {
-        label = label + line[i];
-        i++;
-    }
-    //parse any extra white spaces
-    while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
-    if (i == len)
-        // no label
-        return make_pair(make_pair(label, line), make_pair(false, true));
-    // else
-    // check if there is a colon
-    if (line.at(i) == ':') {
-        i++;
-        // can be a label
-        // check if it is a valid identifier
-        bool flag = validId(label);
-        if (!flag) {
-            // syntax error
-            cout << "SYNTAX ERROR (Illegal Label): At line number: " << line_number << ": " << line << "\n";
-            return make_pair(make_pair(label, line), make_pair(false, false));
-        }
-        else {
-            // valid label
-            // make remaining string
-            string line_r = "";
-            while (i < len) {
-                line_r = line_r + line[i];
-                i++;
-            }
-            // return
-            return make_pair(make_pair(label, line_r), make_pair(true, true));
-        }
-    }
-    // else it is not a label
-    return make_pair(make_pair(label, line), make_pair(false, true));
 
-}
-
-//add line to memory
+// function used to a line of MIPS code to memory, if it is an instruction
 bool addToMemory(string line, REGI &rf, int line_number) {
 
     // args will be used to store the instruction arguments
     vector<string> args;
     bool flag;
     int len;
+    // check if there is a label
     pair<pair<string, string>, pair<bool, bool>> label = checkIfLabel(line, line_number);
     if (label.second.second == false)
+        // there was some error
         return false;
     else {
+        // not a syntax error
         if (label.second.first == true) {
+            // valid label
             // check if the label is already there
             if (rf.labels.find(label.first.first) != rf.labels.end()) {
-                // syntax error
+                // syntax error (same label used for two different memory addresses)
                 cout << "Error: Same label used to represent different addresses.\nLabel repeated: " << label.first.first << ": at line number: " << line_number << "\n";
                 return false;
             }
@@ -683,13 +737,13 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                         rf.label.push_back(make_pair(args[1], make_pair(PC + 1, line_number)));
                     }
                     else {
-                        int addr = stoi(args[1]);
+                        long long addr = stoi(args[1]);
                         if (addr < 0 || addr >= 67108864) { 
                             // address starts from 0 and max integer that can be stored is 2^26 - 1
                             cout << "SYNTAX ERROR 5: At line number: " << line_number << ": " << "\n"; 
                             return false;
                         }
-                        // else store the value in memory
+                        // else store the value (absolute address) in memory
                         memory[PC + 1] = 4 * addr;
                     }
                 }
@@ -735,9 +789,9 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                             return false;
                         }
                         else {
-                            int immediate = stoi(args[3]);
+                            long long immediate = stoi(args[3]);
 
-                            // raise overflow error if necessary
+                            // raise overflow error if necessary (only 16 bit immediate)
                             if (immediate < -32768 || immediate > 32767) {
                                 cout << "Immediate Overflow ERROR: At line number: " << line_number << ": " << "\n";
                                 return false;
@@ -762,7 +816,7 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                             memory[PC + 1] = rf.reg_map[args[1]];
                             memory[PC + 2] = rf.reg_map[args[2]];
                             if (isInteger(args[3])) {
-                                int immediate = stoi(args[3]);
+                                long long immediate = stoi(args[3]);
 
                                 // raise overflow error if necessary
                                 if (immediate < -32768 || immediate > 32767) {
@@ -770,7 +824,7 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                                     return false;
                                 }
                                 // else
-                                // store immediate in memory
+                                // store immediate (absolute jump address) in memory
                                 memory[PC + 3] = PC + 4 + 4 * immediate;
                             }
                             else {
@@ -803,7 +857,7 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                         return false;
                     }
                     else {
-                        int immediate = stoi(args[2]);
+                        long long immediate = stoi(args[2]);
 
                         // raise overflow error if necessary
                         if (immediate < -32768 || immediate > 32767) {
@@ -825,8 +879,11 @@ bool addToMemory(string line, REGI &rf, int line_number) {
     return true;
 }
 
+
+// function used to resolve labels
 bool linker(REGI &rf) {
     
+    // label stores all the unresolved labels
     int len = rf.label.size();
     
     for (int i = 0; i < len; i++) {
@@ -845,10 +902,16 @@ bool linker(REGI &rf) {
         }
 
     }
+    // all labels resolved
     return true;
 }
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char** argv) {
+
+    if (argc > 1) {
+        // optional file name provided
+        file_path = argv[1];
+    }
 
     ifstream infile(file_path);
 
@@ -868,7 +931,7 @@ int main(int argc, const char* argv[]) {
     int line_number = 1;
     bool flag;
 
-    //read line by line
+    //read file, line by line
     while (getline(infile, line)) {
 
         //process and store each instruction in memory
@@ -889,16 +952,17 @@ int main(int argc, const char* argv[]) {
     }
     
     // initialize PARTITION to PC 
-    // PARTITION stores the starting address of data section
+    // PARTITION denotes end of stored instructions
     PARTITION = PC;
 
     // link labels used in program
     flag = linker(rf);
 
     if (!flag)
+        // some linking error
         return 0;
 
-    // re-initialize PC to 0 for execution
+    // re-initialize PC to 0 for execution of MIPS program
     PC = 0;
 
     // execute the program
