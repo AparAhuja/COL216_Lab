@@ -1,0 +1,8 @@
+j loo-
+
+__________
+
+Output:
+
+SYNTAX ERROR 4: At line number: 1: j loo-
+Program terminating!
