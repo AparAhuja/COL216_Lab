@@ -8,7 +8,7 @@
 using namespace std;
 
 // default file path used
-string file_path = "InvalidAccess4.txt";
+string file_path = "sample.txt";
 
 // program counter (starts at 0)
 int PC = 0;
