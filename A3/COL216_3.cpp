@@ -8,7 +8,7 @@
 using namespace std;
 
 // default file path used
-string file_path = "sample.txt";
+string file_path = "InvalidAccess4.txt";
 
 // program counter (starts at 0)
 int PC = 0;
@@ -51,14 +51,14 @@ bool isInteger(string s) {
 
     for (int i = 0; i < len; i++) {
 
-        if (i == 0 && s.at(0) == '-') 
+        if (i == 0 && s.at(0) == '-')
             // might be negative number
             continue;
-        if (s.at(i) < '0' || s.at(i) > '9') { 
+        if (s.at(i) < '0' || s.at(i) > '9') {
             // not an integer
             return false;
         }
-    
+
     }
     // is an integer
     return true;
@@ -67,20 +67,20 @@ bool isInteger(string s) {
 
 // checks if the label used is a valid identifier or not
 bool validId(string label) {
-    
+
     int len = label.length(), i = 0;
-    
+
     // empty string is not a valid id
     if (len == 0) return false;
     else {
-        
+
         if (isalpha(label.at(0)) || label.at(0) == '_') {
             i++;
             while (i < len && (isalpha(label.at(i)) || isdigit(label.at(i)) || label.at(i) == '_')) i++;
             if (i != len)
                 // some invalid character is present in the label
                 return false;
-            else 
+            else
                 // valid id
                 return true;
         }
@@ -100,7 +100,7 @@ struct REGI {
     map<string, int> reg_map = { {"$zero", 0}, {"$at", 1}, {"$v0", 2}, {"$v1", 3}, {"$a0", 4}, {"$a1", 5}, {"$a2",6}, {"$a3", 7}, {"$t0", 8}, {"$t1", 9}, {"$t2", 10},
                                  {"$t3", 11}, {"$t4", 12}, {"$t5", 13}, {"$t6", 14}, {"$t7", 15}, {"$s0", 16}, {"$s1", 17}, {"$s2", 18}, {"$s3", 19}, {"$s4", 20}, {"$s5", 21},
                                  {"$s6", 22}, {"$s7", 23}, {"$t8", 24}, {"$t9", 25}, {"$k0", 26}, {"$k1", 27}, {"$gp", 28}, {"$sp", 29}, {"$fp", 30}, {"$ra", 31} };
-    
+
     // used to store labels used in program along with their corresponding address
     map<string, int> labels;
 
@@ -128,7 +128,7 @@ struct REGI {
 
         // print register contents
         cout << "Register file contents after " << cycle_cnt << " clock cycles:\n\n";
-        
+
         cout << "zero: " << decimalToHexadecimal(reg[0]) << " " << "at: " << decimalToHexadecimal(reg[1]) << " " << "v0: " << decimalToHexadecimal(reg[2]) << " " << "v1: " << decimalToHexadecimal(reg[3]) << " " << "a0: " << decimalToHexadecimal(reg[4]) << "\n";
         cout << "a1: " << decimalToHexadecimal(reg[5]) << " " << "a2: " << decimalToHexadecimal(reg[6]) << " " << "a3: " << decimalToHexadecimal(reg[7]) << " " << "t0: " << decimalToHexadecimal(reg[8]) << " " << "t1: " << decimalToHexadecimal(reg[9]) << "\n";
         cout << "t2: " << decimalToHexadecimal(reg[10]) << " " << "t3: " << decimalToHexadecimal(reg[11]) << " " << "t4: " << decimalToHexadecimal(reg[12]) << " " << "t5: " << decimalToHexadecimal(reg[13]) << " " << "t6: " << decimalToHexadecimal(reg[14]) << "\n";
@@ -332,73 +332,73 @@ struct REGI {
 
 
 // this function simulates the execution of MIPS program
-bool simulator(REGI &rf) {
+bool simulator(REGI& rf) {
 
     int ins_code;
     bool flag;
 
     // while program counter is less than PARTITION
     while (PC < PARTITION) {
-        
+
         ins_code = memory[PC];
-        
+
         switch (ins_code) {
             // add
-            case 0:
-                flag = rf.add(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                if (flag) PC += 4;
-                else return flag;
-                break;
+        case 0:
+            flag = rf.add(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            if (flag) PC += 4;
+            else return flag;
+            break;
             // sub
-            case 1:
-                flag = rf.sub(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                if (flag) PC += 4;
-                else return flag;
-                break;
-           // mul
-            case 2:
-                flag = rf.mul(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                if (flag) PC += 4;
-                else return flag;
-                break;
+        case 1:
+            flag = rf.sub(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            if (flag) PC += 4;
+            else return flag;
+            break;
+            // mul
+        case 2:
+            flag = rf.mul(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            if (flag) PC += 4;
+            else return flag;
+            break;
             // beq
-            case 3:
-                flag = rf.beq(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                if (!flag) return flag;
-                break;
+        case 3:
+            flag = rf.beq(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            if (!flag) return flag;
+            break;
             // bne
-            case 4:
-                flag = rf.bne(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                if (!flag) return flag;
-                break;
+        case 4:
+            flag = rf.bne(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            if (!flag) return flag;
+            break;
             // slt
-            case 5:
-                rf.slt(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                PC += 4;
-                break;
+        case 5:
+            rf.slt(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            PC += 4;
+            break;
             // j
-            case 6:
-                flag = rf.j(memory[PC + 1]);
-                if (!flag) return flag;
-                break;
+        case 6:
+            flag = rf.j(memory[PC + 1]);
+            if (!flag) return flag;
+            break;
             // lw
-            case 7:
-                flag = rf.lw(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                if (flag) PC += 4;
-                else return flag;
-                break;
+        case 7:
+            flag = rf.lw(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            if (flag) PC += 4;
+            else return flag;
+            break;
             // sw
-            case 8:
-                flag = rf.sw(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                if (flag) PC += 4;
-                else return flag;
-                break;
+        case 8:
+            flag = rf.sw(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            if (flag) PC += 4;
+            else return flag;
+            break;
             // addi                
-            case 9:
-                flag = rf.addi(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
-                if (flag) PC += 4;
-                else return flag;
-                break;
+        case 9:
+            flag = rf.addi(memory[PC + 1], memory[PC + 2], memory[PC + 3]);
+            if (flag) PC += 4;
+            else return flag;
+            break;
         }
 
         rf.print_reg_file();
@@ -412,16 +412,16 @@ bool simulator(REGI &rf) {
 
 // checks if a given line of code represents a MIPS label
 pair<pair<string, string>, pair<bool, bool>> checkIfLabel(string line, int line_number) {
-    
+
     int len = line.length(), i = 0;
     string label = "";
-    
+
     // parse initial white spaces
     while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
     if (i == len)
         // no label
         return make_pair(make_pair(label, line), make_pair(false, true));
-    
+
     // parse label
     while (i < len && line.at(i) != ' ' && line.at(i) != ':' && line.at(i) != '\t') {
         label = label + line[i];
@@ -432,7 +432,7 @@ pair<pair<string, string>, pair<bool, bool>> checkIfLabel(string line, int line_
     if (i == len)
         // no label
         return make_pair(make_pair(label, line), make_pair(false, true));
-    
+
     // else
     // check if there is a colon
     if (line.at(i) == ':') {
@@ -474,13 +474,13 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
     int i = 0;
     // maximum of 4 arguments can be present in a valid instruction
     string code = "", arg1 = "", arg2 = "", arg3 = "";
-  
+
     // read all initial white spaces
     while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
     // return if there are only white spaces with true (no error)
     if (i == len)
         return make_pair(args, true);
-    
+
     // else
     else {
         // read all non-whitespace, non-comma characters, store them in code
@@ -492,18 +492,18 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
         if (code.length() == 0) {
             return make_pair(args, false);
         }
-        
+
         // else
         else {
             // push back the first argument
             args.push_back(code);
-            
+
             // read all immediate white spaces
             while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
             // if there are no more arguments, return error
             if (i == len)
                 return make_pair(args, false);
-            
+
             // else
             else {
 
@@ -519,13 +519,13 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                 else {
                     // push back the second argument
                     args.push_back(arg1);
-                    
+
                     // read all immediate white spaces
                     while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
                     // if there are no more arguments, then it can be jump instruction, so return true
                     if (i == len)
                         return make_pair(args, true);
-                    
+
                     // else
                     else {
                         // read comma if any
@@ -537,14 +537,14 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
                             return make_pair(args, false);
                         // else
                         // read all non-white space, non-comma, non-LPAREN characters, store them in arg2
-                        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '('  && instruction.at(i) != '\t') {
+                        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '(' && instruction.at(i) != '\t') {
                             arg2 = arg2 + instruction[i];
                             i++;
                         }
                         // return error if arg2 is still empty
                         if (arg2.length() == 0)
                             return make_pair(args, false);
-                        
+
                         // else
                         else {
                             // push back the third argument
@@ -660,7 +660,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
 
 
 // function used to a line of MIPS code to memory, if it is an instruction
-bool addToMemory(string line, REGI &rf, int line_number) {
+bool addToMemory(string line, REGI& rf, int line_number) {
 
     // args will be used to store the instruction arguments
     vector<string> args;
@@ -703,14 +703,14 @@ bool addToMemory(string line, REGI &rf, int line_number) {
         if (args.size() == 0)
             return true;
         else {
-            
+
             // ignore the case of instruction, convert it into lower case
             transform(args[0].begin(), args[0].end(), args[0].begin(), ::tolower);
-            
+
             // check if the instruction is valid or not
-            if (rf.ins_map.find(args[0]) == rf.ins_map.end()) { 
+            if (rf.ins_map.find(args[0]) == rf.ins_map.end()) {
                 // invalid instruction
-                cout << "SYNTAX ERROR 2: At line number: " << line_number << ": " << line << "\n"; 
+                cout << "SYNTAX ERROR 2: At line number: " << line_number << ": " << line << "\n";
                 return false;
             }
             // else store the instruction in memory
@@ -727,7 +727,7 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                     return false;
                 }
                 else {
-                    if (!isInteger(args[1])) { 
+                    if (!isInteger(args[1])) {
                         if (!validId(args[1])) {
                             // not a valid label address
                             cout << "SYNTAX ERROR 4: At line number: " << line_number << ": " << line << "\n";
@@ -738,9 +738,9 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                     }
                     else {
                         long long addr = stoi(args[1]);
-                        if (addr < 0 || addr >= 67108864) { 
+                        if (addr < 0 || addr >= 67108864) {
                             // address starts from 0 and max integer that can be stored is 2^26 - 1
-                            cout << "SYNTAX ERROR 5: At line number: " << line_number << ": " << "\n"; 
+                            cout << "SYNTAX ERROR 5: At line number: " << line_number << ": " << "\n";
                             return false;
                         }
                         // else store the value (absolute address) in memory
@@ -768,12 +768,21 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                         memory[PC + 1] = rf.reg_map[args[1]];
                         memory[PC + 2] = rf.reg_map[args[2]];
                         memory[PC + 3] = rf.reg_map[args[3]];
-                        int temp = memory[PC+1];
-                        if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
-                        //temp = memory[PC+2];
-                        //if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false;
-                        //temp = memory[PC+3];
-                        //if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false;
+                        int temp = memory[PC + 1];
+                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                            return false;
+                        }
+                        temp = memory[PC + 2];
+                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                            return false;
+                        }
+                        temp = memory[PC + 3];
+                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                            return false;
+                        }
                     }
                 }
             }
@@ -807,11 +816,16 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                             memory[PC + 1] = rf.reg_map[args[1]];
                             memory[PC + 2] = rf.reg_map[args[2]];
                             memory[PC + 3] = immediate;
-//                             int temp = memory[PC+1];
-//                             if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
-//                             temp = memory[PC+2];
-//                             if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
-                        
+                            int temp = memory[PC + 1];
+                            if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                                cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                                return false;
+                            }
+                            temp = memory[PC + 2];
+                            if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                                cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                                return false;
+                            }
                         }
                     }
                     else {
@@ -826,11 +840,16 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                             // store register
                             memory[PC + 1] = rf.reg_map[args[1]];
                             memory[PC + 2] = rf.reg_map[args[2]];
-                            int temp = memory[PC+1];
-                            if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
-                            temp = memory[PC+2];
-                            if(temp == 1 || (temp>=26 && temp!31)) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
-                        
+                            int temp = memory[PC + 1];
+                            if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                                cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                                return false;
+                            }
+                            temp = memory[PC + 2];
+                            if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                                cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                                return false;
+                            }
                             if (isInteger(args[3])) {
                                 long long immediate = stoi(args[3]);
 
@@ -884,9 +903,16 @@ bool addToMemory(string line, REGI &rf, int line_number) {
                         memory[PC + 1] = rf.reg_map[args[1]];
                         memory[PC + 2] = immediate;
                         memory[PC + 3] = rf.reg_map[args[3]];
-                        int temp = memory[PC+1];
-                        if(ins_map[args[0]] == 7 &&(temp == 1 || (temp>=26 && temp!31))) cout << "Access Error: Reserved register: At line number: " << line_number <<": "<<line<<"\n"; return false; 
-                        
+                        int temp = memory[PC + 1];
+                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                            return false;
+                        }
+                        temp = memory[PC + 3];
+                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
+                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
+                            return false;
+                        }
                     }
                 }
             }
@@ -900,13 +926,13 @@ bool addToMemory(string line, REGI &rf, int line_number) {
 
 
 // function used to resolve labels
-bool linker(REGI &rf) {
-    
+bool linker(REGI& rf) {
+
     // label stores all the unresolved labels
     int len = rf.label.size();
-    
+
     for (int i = 0; i < len; i++) {
-    
+
         pair<string, pair<int, int>> label = rf.label[i];
         // check if label is actually defined
         if (rf.labels.find(label.first) == rf.labels.end()) {
@@ -969,7 +995,7 @@ int main(int argc, char** argv) {
         // read next line
         line_number++;
     }
-    
+
     // initialize PARTITION to PC 
     // PARTITION denotes end of stored instructions
     PARTITION = PC;
