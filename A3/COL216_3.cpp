@@ -21,6 +21,7 @@ int DATA_START = 699052;
 
 int memory[1048576];
 
+// - > vector<int> each_ins_cnt;
 
 // function that converts a decimal number to its corresponding hexadecimal format
 string decimalToHexadecimal(long long a) {
@@ -156,7 +157,7 @@ struct REGI {
     bool add(int dest, int src1, int src2) {
         long long sum = (long long)reg[src1] + (long long)reg[src2];
         stat_update(0);
-
+        // - > cout<<"ADD";
         if (sum > 2147483647 || sum < -2147483648) {
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
             execution_stats();
@@ -174,6 +175,7 @@ struct REGI {
     bool sub(int dest, int src1, int src2) {
         long long diff = (long long)reg[src1] - (long long)reg[src2];
         stat_update(1);
+        // - > cout<<"SUB";
 
         if (diff > 2147483647 || diff < -2147483648) {
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
@@ -192,6 +194,7 @@ struct REGI {
     bool mul(int dest, int src1, int src2) {
         long long prod = (long long)reg[src1] * (long long)reg[src2];
         stat_update(2);
+        // - > cout<<"MUL";
 
         if (prod > 2147483647 || prod < -2147483648) {
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
@@ -208,6 +211,8 @@ struct REGI {
     }
 
     bool beq(int src1, int src2, int jumpto) {
+        // - > cout<<"BEQ";
+
         if (reg[src1] == reg[src2]) {
             PC = jumpto;
             if (PC > PARTITION || PC < 0) {
@@ -223,6 +228,8 @@ struct REGI {
     }
 
     bool bne(int src1, int src2, int jumpto) {
+        // - > cout<<"BNE";
+
         if (reg[src1] != reg[src2]) {
             PC = jumpto;
             if (PC > PARTITION || PC < 0) {
@@ -240,6 +247,8 @@ struct REGI {
     void slt(int dest, int src1, int src2) {
         reg[dest] = (reg[src1] < reg[src2]) ? 1 : 0;
         // check if it is the zero register
+        // - > cout<<"SLT";
+
         if (dest == 0)
             reg[dest] = 0;
         stat_update(5);
@@ -247,6 +256,8 @@ struct REGI {
 
     bool j(int jumpto) {
         PC = jumpto;
+        // - > cout<<"Jump";
+
         stat_update(6);
         if (PC > PARTITION) {
             cout << "Warning: Program jumped to a non-instruction memory location. Program terminated abruptly!\n\n";
@@ -259,6 +270,8 @@ struct REGI {
 
     bool lw(int dest, int offset, int src) {
         // check if address is valid
+        // - > cout<<"Load Word";
+
         long long addr = (long long)offset + (long long)reg[src] + (long long)DATA_START;
         if (addr >= 1048576 || addr < DATA_START) {
             // invalid address, error
@@ -285,6 +298,8 @@ struct REGI {
 
     bool sw(int src, int offset, int dest) {
         // check if address is valid
+        // - > cout<<"Store Word";
+
         long long addr = (long long)offset + (long long)reg[dest] + (long long)DATA_START;
         if (addr < DATA_START || addr >= 1048576) {
             // invalid address, error
@@ -309,6 +324,7 @@ struct REGI {
     bool addi(int dest, int src, int adds) {
         long long sum = (long long)reg[src] + (long long)adds;
         stat_update(9);
+        // - > cout<<"ADD Immediate";
 
         if (sum > 2147483647 || sum < -2147483648) {
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
@@ -339,7 +355,7 @@ bool simulator(REGI& rf) {
 
     // while program counter is less than PARTITION
     while (PC < PARTITION) {
-
+        // - > each_ins_cnt[(int)PC/4]++;
         ins_code = memory[PC];
 
         switch (ins_code) {
@@ -661,7 +677,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
 
 // function used to a line of MIPS code to memory, if it is an instruction
 bool addToMemory(string line, REGI& rf, int line_number) {
-
+    // - > each_ins_cnt.push_back(0);
     // args will be used to store the instruction arguments
     vector<string> args;
     bool flag;
