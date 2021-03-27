@@ -1,0 +1,8 @@
+BEQ $t1 ,$k1, 0
+
+____________________
+
+Output:
+
+Access Error: Trying to access reserved register: At line number: 1: BEQ $t1 ,$k1, 0
+Program terminating!

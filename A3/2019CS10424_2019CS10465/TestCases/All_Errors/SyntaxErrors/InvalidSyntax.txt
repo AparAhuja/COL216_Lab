@@ -1,0 +1,8 @@
+j ,,
+
+__________________
+
+Output:
+
+SYNTAX ERROR 1: At line number: 1: j ,,
+Program terminating!

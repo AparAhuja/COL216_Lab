@@ -1,0 +1,8 @@
+adDi $k0 $t1, 1
+
+_______________________
+
+Output:
+
+Access Error: Trying to access reserved register: At line number: 1: adDi $k0 $t1, 1
+Program terminating!

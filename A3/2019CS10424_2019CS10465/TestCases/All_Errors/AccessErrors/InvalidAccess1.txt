@@ -1,0 +1,8 @@
+Add $t0, $at $t1
+
+_____________________
+
+Output:
+
+Access Error: Trying to access reserved register: At line number: 1: Add $t0, $at $t1
+Program terminating!

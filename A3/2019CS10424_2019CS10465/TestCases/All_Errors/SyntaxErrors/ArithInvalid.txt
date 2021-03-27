@@ -1,0 +1,8 @@
+add $t2
+
+____________
+
+Output:
+
+SYNTAX ERROR 6: At line number: 1: add $t2
+Program terminating!

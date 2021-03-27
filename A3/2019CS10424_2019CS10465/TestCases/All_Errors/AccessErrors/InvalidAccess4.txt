@@ -1,0 +1,8 @@
+sw $gp, 0($zero)
+
+______________________
+
+Output:
+
+Access Error: Trying to access reserved register: At line number: 1: sw $gp, 0($zero)
+Program terminating!
