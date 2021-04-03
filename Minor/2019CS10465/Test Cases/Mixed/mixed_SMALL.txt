@@ -1,0 +1,65 @@
+add $t3 $t2, $t6
+add $t1 $s2, $s3
+addi $t1 $t1 99
+addi $s2 $s3, 9999
+lw $t1  0 ( $t5 )
+add $t2 $t2, $t3
+lw $t3  8 ( $t3 )
+add $v1 $t2, $t3
+lw $t5  144 ( $zero )
+sw $zero 144 ( $t2 )
+lw $t5  144 ( $zero )
+addi $v1 $t2, 32767
+addi $t5 $t8, 2222
+sw $t1  0 ( $t2 )
+sw $t3  4 ( $t2 )
+
+________OUTPUT________
+
+cycle 1: Instruction - add $t3 $t2 $t6: $t3 = 0
+cycle 2: Instruction - add $t1 $s2 $s3: $t1 = 0
+cycle 3: Instruction - addi $t1 $t1 99: $t1 = 99
+cycle 4: Instruction - addi $s2 $s3 9999: $s2 = 9999
+cycle 5: DRAM request issued(Load)
+cycle 6: Instruction - add $t2 $t2 $t3: $t2 = 0
+cycle 6-17: Instruction - lw $t1 0($t5): $t1 = 0
+         DRAM Activity: Copy row 512 from memory to buffer.
+                        Copy Data at column 512 to $t1.
+                        Memory Address: 0 - 3 loaded
+cycle 18: DRAM request issued(Load)
+cycle 19-20: Instruction - lw $t3 8($t3): $t3 = 0
+         DRAM Activity: Copy Data at column 512 to $t3.
+                        Memory Address: 8 - 11 loaded
+cycle 21: Instruction - add $v1 $t2 $t3: $v1 = 0
+cycle 22: DRAM request issued(Load)
+cycle 23-24: Instruction - lw $t5 144($zero): $t5 = 0
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 144 - 147 loaded
+cycle 25: DRAM request issued(Store)
+cycle 26-27: Instruction - sw $zero 144($t2): 
+         DRAM Activity: Copy Data to column 144 from $t2.
+                        Memory Address: 144 - 147 = 0
+cycle 28: DRAM request issued(Load)
+cycle 29: Instruction - addi $v1 $t2 32767: $v1 = 32767
+cycle 29-30: Instruction - lw $t5 144($zero): $t5 = 0
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 144 - 147 loaded
+cycle 31: Instruction - addi $t5 $t8 2222: $t5 = 2222
+cycle 32: DRAM request issued(Store)
+cycle 33-34: Instruction - sw $t1 0($t2): 
+         DRAM Activity: Copy Data to column 0 from $t2.
+                        Memory Address: 0 - 3 = 0
+cycle 35: DRAM request issued(Store)
+cycle 36-37: Instruction - sw $t3 4($t2): 
+         DRAM Activity: Copy Data to column 4 from $t2.
+                        Memory Address: 4 - 7 = 0
+
+Executing Write-Back. Write-Back clock cycles are excluded below.
+
+Total clock cycles: 37
+Total row buffer updates: 4
+
+Number of instructions executed for each type are given below:-
+add: 4, addi: 4, beq: 0, bne: 0, j: 0
+lw: 4, mul: 0, slt: 0, sub: 0, sw: 3
+Program executed successfully!

@@ -1,0 +1,43 @@
+cycle 1: Instruction - addi $s0 $zero 1000: $s0 = 1000
+cycle 2: Instruction - addi $s1 $zero 1024: $s1 = 1024
+cycle 3: Instruction - addi $t0 $zero 1: $t0 = 1
+cycle 4: Instruction - addi $t1 $zero 2: $t1 = 2
+cycle 5: DRAM request issued(Store)
+cycle 6-17: Instruction - sw $t0 0($s0): 
+         DRAM Activity: Copy row 512 from memory to buffer.
+                        Copy Data to column 1000 from $s0.
+                        Memory Address: 1000 - 1003 = 1
+cycle 18: DRAM request issued(Store)
+cycle 19-40: Instruction - sw $t1 0($s1): 
+         DRAM Activity: Copy row 512 from buffer back to memory.
+                        Copy row 513 from memory to buffer.
+                        Copy Data to column 0 from $s1.
+                        Memory Address: 1024 - 1027 = 2
+cycle 41: DRAM request issued(Load)
+cycle 42-63: Instruction - lw $t2 0($s0): $t2 = 1
+         DRAM Activity: Copy row 513 from buffer back to memory.
+                        Copy row 512 from memory to buffer.
+                        Copy Data at column 512 to $t2.
+                        Memory Address: 1000 - 1003 loaded
+cycle 64: DRAM request issued(Load)
+cycle 65-86: Instruction - lw $t3 0($s1): $t3 = 2
+         DRAM Activity: Copy row 512 from buffer back to memory.
+                        Copy row 513 from memory to buffer.
+                        Copy Data at column 513 to $t3.
+                        Memory Address: 1024 - 1027 loaded
+cycle 87: Instruction - add $t3 $t3 $t2: $t3 = 3
+cycle 88: Instruction - addi $s2 $zero 1028: $s2 = 1028
+cycle 89: DRAM request issued(Store)
+cycle 90-91: Instruction - sw $t3 0($s2): 
+         DRAM Activity: Copy Data to column 4 from $s2.
+                        Memory Address: 1028 - 1031 = 3
+
+Executing Write-Back. Write-Back clock cycles are excluded below. 
+
+Total clock cycles: 91
+Total row buffer updates: 7
+
+Number of instructions executed for each type are given below:-
+add: 1, addi: 5, beq: 0, bne: 0, j: 0
+lw: 2, mul: 0, slt: 0, sub: 0, sw: 3
+Program executed successfully!

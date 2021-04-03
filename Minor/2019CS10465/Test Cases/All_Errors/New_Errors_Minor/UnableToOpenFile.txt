@@ -1,0 +1,5 @@
+cmd line: "/Users/aparahuja/Desktop/Test Cases/text.txt" 10 3 1
+
+________OUTPUT________
+
+ERROR: Unable to open file. Program terminating!

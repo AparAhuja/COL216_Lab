@@ -1,0 +1,141 @@
+addi $t1 $s2, -62
+addi $v0 $t3, 223
+lw $t3  12146 ( $t1 )
+addi $t2 $t1 -1228
+lw $t4  1004 ( $t8 )
+addi $t3 $t5, 612
+addi $t1 $s2, 233
+add $v1 $t6, $t3
+add $v0 $t5, $t2
+add $t7 $t8, $t7
+sw $t1 104 ( $t6 )
+add $s3 $t2, $t8
+addi $t3 $s2, 0012
+lw $t5  148 ( $zero )
+lw $t3  044 ( $zero )
+add $t3 $t2, $t2
+add $v0 $t5, $t5
+sw $t1 12144 ( $t6 )
+lw $t5  9444 ( $zero )
+sw $t1 9248 ( $t6 )
+sw $t1 224 ( $t6 )
+addi $t4 $t6 112
+lw $t5  104 ( $zero )
+lw $t4  2104 ( $t8 )
+sw $t1 348 ( $t6 )
+lw $t5  2104 ( $zero )
+sw $t1 268 ( $t6 )
+lw $t5  144 ( $zero )
+sw $t1 148 ( $t6 )
+lw $t3  184 ( $zero )
+
+______OUTPUT______
+
+cycle 1: Instruction - addi $t1 $s2 -62: $t1 = -62
+cycle 2: Instruction - addi $v0 $t3 223: $v0 = 223
+cycle 3: DRAM request issued(Load)
+cycle 4-15: Instruction - lw $t3 12146($t1): $t3 = 0
+         DRAM Activity: Copy row 523 from memory to buffer.
+                        Copy Data at column 523 to $t3.
+                        Memory Address: 12084 - 12087 loaded
+cycle 16: Instruction - addi $t2 $t1 -1228: $t2 = -1290
+cycle 17: DRAM request issued(Load)
+cycle 18: Instruction - addi $t3 $t5 612: $t3 = 612
+cycle 19: Instruction - addi $t1 $s2 233: $t1 = 233
+cycle 20: Instruction - add $v1 $t6 $t3: $v1 = 612
+cycle 21: Instruction - add $v0 $t5 $t2: $v0 = -1290
+cycle 18-39: Instruction - lw $t4 1004($t8): $t4 = 0
+         DRAM Activity: Copy row 523 from buffer back to memory.
+                        Copy row 512 from memory to buffer.
+                        Copy Data at column 512 to $t4.
+                        Memory Address: 1004 - 1007 loaded
+cycle 40: Instruction - add $t7 $t8 $t7: $t7 = 0
+cycle 41: DRAM request issued(Store)
+cycle 42: Instruction - add $s3 $t2 $t8: $s3 = -1290
+cycle 43: Instruction - addi $t3 $s2 12: $t3 = 12
+cycle 42-43: Instruction - sw $t1 104($t6): 
+         DRAM Activity: Copy Data to column 104 from $t6.
+                        Memory Address: 104 - 107 = 233
+cycle 44: DRAM request issued(Load)
+cycle 45-46: Instruction - lw $t5 148($zero): $t5 = 0
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 148 - 151 loaded
+cycle 47: DRAM request issued(Load)
+cycle 48-49: Instruction - lw $t3 44($zero): $t3 = 0
+         DRAM Activity: Copy Data at column 512 to $t3.
+                        Memory Address: 44 - 47 loaded
+cycle 50: Instruction - add $t3 $t2 $t2: $t3 = -2580
+cycle 51: Instruction - add $v0 $t5 $t5: $v0 = 0
+cycle 52: DRAM request issued(Store)
+cycle 53-74: Instruction - sw $t1 12144($t6): 
+         DRAM Activity: Copy row 512 from buffer back to memory.
+                        Copy row 523 from memory to buffer.
+                        Copy Data to column 880 from $t6.
+                        Memory Address: 12144 - 12147 = 233
+cycle 75: DRAM request issued(Load)
+cycle 76-97: Instruction - lw $t5 9444($zero): $t5 = 0
+         DRAM Activity: Copy row 523 from buffer back to memory.
+                        Copy row 521 from memory to buffer.
+                        Copy Data at column 521 to $t5.
+                        Memory Address: 9444 - 9447 loaded
+cycle 98: DRAM request issued(Store)
+cycle 99-100: Instruction - sw $t1 9248($t6): 
+         DRAM Activity: Copy Data to column 32 from $t6.
+                        Memory Address: 9248 - 9251 = 233
+cycle 101: DRAM request issued(Store)
+cycle 102-123: Instruction - sw $t1 224($t6): 
+         DRAM Activity: Copy row 521 from buffer back to memory.
+                        Copy row 512 from memory to buffer.
+                        Copy Data to column 224 from $t6.
+                        Memory Address: 224 - 227 = 233
+cycle 124: Instruction - addi $t4 $t6 112: $t4 = 112
+cycle 125: DRAM request issued(Load)
+cycle 126-127: Instruction - lw $t5 104($zero): $t5 = 233
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 104 - 107 loaded
+cycle 128: DRAM request issued(Load)
+cycle 129-150: Instruction - lw $t4 2104($t8): $t4 = 0
+         DRAM Activity: Copy row 512 from buffer back to memory.
+                        Copy row 514 from memory to buffer.
+                        Copy Data at column 514 to $t4.
+                        Memory Address: 2104 - 2107 loaded
+cycle 151: DRAM request issued(Store)
+cycle 152-173: Instruction - sw $t1 348($t6): 
+         DRAM Activity: Copy row 514 from buffer back to memory.
+                        Copy row 512 from memory to buffer.
+                        Copy Data to column 348 from $t6.
+                        Memory Address: 348 - 351 = 233
+cycle 174: DRAM request issued(Load)
+cycle 175-196: Instruction - lw $t5 2104($zero): $t5 = 0
+         DRAM Activity: Copy row 512 from buffer back to memory.
+                        Copy row 514 from memory to buffer.
+                        Copy Data at column 514 to $t5.
+                        Memory Address: 2104 - 2107 loaded
+cycle 197: DRAM request issued(Store)
+cycle 198-219: Instruction - sw $t1 268($t6): 
+         DRAM Activity: Copy row 514 from buffer back to memory.
+                        Copy row 512 from memory to buffer.
+                        Copy Data to column 268 from $t6.
+                        Memory Address: 268 - 271 = 233
+cycle 220: DRAM request issued(Load)
+cycle 221-222: Instruction - lw $t5 144($zero): $t5 = 0
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 144 - 147 loaded
+cycle 223: DRAM request issued(Store)
+cycle 224-225: Instruction - sw $t1 148($t6): 
+         DRAM Activity: Copy Data to column 148 from $t6.
+                        Memory Address: 148 - 151 = 233
+cycle 226: DRAM request issued(Load)
+cycle 227-228: Instruction - lw $t3 184($zero): $t3 = 0
+         DRAM Activity: Copy Data at column 512 to $t3.
+                        Memory Address: 184 - 187 loaded
+
+Executing Write-Back. Write-Back clock cycles are excluded below.
+
+Total clock cycles: 228
+Total row buffer updates: 16
+
+Number of instructions executed for each type are given below:-
+add: 6, addi: 7, beq: 0, bne: 0, j: 0
+lw: 10, mul: 0, slt: 0, sub: 0, sw: 7
+Program executed successfully!

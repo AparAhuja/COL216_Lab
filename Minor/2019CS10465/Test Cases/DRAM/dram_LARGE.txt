@@ -1,0 +1,186 @@
+addi $t1 $t1 100
+addi $t8 $t8 144
+sw $t1 144 ( $t1 )
+lw $t2  148 ( $t1 )
+lw $t3  144 ( $t1 )
+lw $t4  104 ( $t8 )
+sw $t1 148 ( $t6 )
+sw $t1 948 ( $t6 )
+lw $t5  224 ( $zero )
+sw $t1 348 ( $t6 )
+lw $t5  2104 ( $zero )
+sw $t1 268 ( $t6 )
+lw $t5  144 ( $zero )
+sw $t1 148 ( $t6 )
+lw $t5  164 ( $zero )
+lw $t3  184 ( $t1 )
+lw $t4  124 ( $t8 )
+lw $t3  144 ( $t1 )
+lw $t4  504 ( $t8 )
+sw $t1 948 ( $t6 )
+lw $t5  4444 ( $zero )
+sw $t1 224 ( $t6 )
+lw $t5  104 ( $zero )
+sw $t1 104 ( $t6 )
+lw $t5  148 ( $zero )
+lw $t3  044 ( $t1 )
+lw $t4  1004 ( $t8 )
+lw $t3  12144 ( $t1 )
+lw $t4  2104 ( $t8 )
+sw $t1 12144 ( $t6 )
+lw $t5  9444 ( $zero )
+sw $t1 9248 ( $t6 )
+
+________OUTPUT________
+
+cycle 1: Instruction - addi $t1 $t1 100: $t1 = 100
+cycle 2: Instruction - addi $t8 $t8 144: $t8 = 144
+cycle 3: DRAM request issued(Store)
+cycle 4-15: Instruction - sw $t1 144($t1): 
+         DRAM Activity: Copy row 512 from memory to buffer.
+                        Copy Data to column 244 from $t1.
+                        Memory Address: 244 - 247 = 100
+cycle 16: DRAM request issued(Load)
+cycle 17-18: Instruction - lw $t2 148($t1): $t2 = 0
+         DRAM Activity: Copy Data at column 512 to $t2.
+                        Memory Address: 248 - 251 loaded
+cycle 19: DRAM request issued(Load)
+cycle 20-21: Instruction - lw $t3 144($t1): $t3 = 100
+         DRAM Activity: Copy Data at column 512 to $t3.
+                        Memory Address: 244 - 247 loaded
+cycle 22: DRAM request issued(Load)
+cycle 23-24: Instruction - lw $t4 104($t8): $t4 = 0
+         DRAM Activity: Copy Data at column 512 to $t4.
+                        Memory Address: 248 - 251 loaded
+cycle 25: DRAM request issued(Store)
+cycle 26-27: Instruction - sw $t1 148($t6): 
+         DRAM Activity: Copy Data to column 148 from $t6.
+                        Memory Address: 148 - 151 = 100
+cycle 28: DRAM request issued(Store)
+cycle 29-30: Instruction - sw $t1 948($t6): 
+         DRAM Activity: Copy Data to column 948 from $t6.
+                        Memory Address: 948 - 951 = 100
+cycle 31: DRAM request issued(Load)
+cycle 32-33: Instruction - lw $t5 224($zero): $t5 = 0
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 224 - 227 loaded
+cycle 34: DRAM request issued(Store)
+cycle 35-36: Instruction - sw $t1 348($t6): 
+         DRAM Activity: Copy Data to column 348 from $t6.
+                        Memory Address: 348 - 351 = 100
+cycle 37: DRAM request issued(Load)
+cycle 38-59: Instruction - lw $t5 2104($zero): $t5 = 0
+         DRAM Activity: Copy row 512 from buffer back to memory.
+                        Copy row 514 from memory to buffer.
+                        Copy Data at column 514 to $t5.
+                        Memory Address: 2104 - 2107 loaded
+cycle 60: DRAM request issued(Store)
+cycle 61-82: Instruction - sw $t1 268($t6): 
+         DRAM Activity: Copy row 514 from buffer back to memory.
+                        Copy row 512 from memory to buffer.
+                        Copy Data to column 268 from $t6.
+                        Memory Address: 268 - 271 = 100
+cycle 83: DRAM request issued(Load)
+cycle 84-85: Instruction - lw $t5 144($zero): $t5 = 0
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 144 - 147 loaded
+cycle 86: DRAM request issued(Store)
+cycle 87-88: Instruction - sw $t1 148($t6): 
+         DRAM Activity: Copy Data to column 148 from $t6.
+                        Memory Address: 148 - 151 = 100
+cycle 89: DRAM request issued(Load)
+cycle 90-91: Instruction - lw $t5 164($zero): $t5 = 0
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 164 - 167 loaded
+cycle 92: DRAM request issued(Load)
+cycle 93-94: Instruction - lw $t3 184($t1): $t3 = 0
+         DRAM Activity: Copy Data at column 512 to $t3.
+                        Memory Address: 284 - 287 loaded
+cycle 95: DRAM request issued(Load)
+cycle 96-97: Instruction - lw $t4 124($t8): $t4 = 100
+         DRAM Activity: Copy Data at column 512 to $t4.
+                        Memory Address: 268 - 271 loaded
+cycle 98: DRAM request issued(Load)
+cycle 99-100: Instruction - lw $t3 144($t1): $t3 = 100
+         DRAM Activity: Copy Data at column 512 to $t3.
+                        Memory Address: 244 - 247 loaded
+cycle 101: DRAM request issued(Load)
+cycle 102-103: Instruction - lw $t4 504($t8): $t4 = 0
+         DRAM Activity: Copy Data at column 512 to $t4.
+                        Memory Address: 648 - 651 loaded
+cycle 104: DRAM request issued(Store)
+cycle 105-106: Instruction - sw $t1 948($t6): 
+         DRAM Activity: Copy Data to column 948 from $t6.
+                        Memory Address: 948 - 951 = 100
+cycle 107: DRAM request issued(Load)
+cycle 108-129: Instruction - lw $t5 4444($zero): $t5 = 0
+         DRAM Activity: Copy row 512 from buffer back to memory.
+                        Copy row 516 from memory to buffer.
+                        Copy Data at column 516 to $t5.
+                        Memory Address: 4444 - 4447 loaded
+cycle 130: DRAM request issued(Store)
+cycle 131-152: Instruction - sw $t1 224($t6): 
+         DRAM Activity: Copy row 516 from buffer back to memory.
+                        Copy row 512 from memory to buffer.
+                        Copy Data to column 224 from $t6.
+                        Memory Address: 224 - 227 = 100
+cycle 153: DRAM request issued(Load)
+cycle 154-155: Instruction - lw $t5 104($zero): $t5 = 0
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 104 - 107 loaded
+cycle 156: DRAM request issued(Store)
+cycle 157-158: Instruction - sw $t1 104($t6): 
+         DRAM Activity: Copy Data to column 104 from $t6.
+                        Memory Address: 104 - 107 = 100
+cycle 159: DRAM request issued(Load)
+cycle 160-161: Instruction - lw $t5 148($zero): $t5 = 100
+         DRAM Activity: Copy Data at column 512 to $t5.
+                        Memory Address: 148 - 151 loaded
+cycle 162: DRAM request issued(Load)
+cycle 163-164: Instruction - lw $t3 44($t1): $t3 = 0
+         DRAM Activity: Copy Data at column 512 to $t3.
+                        Memory Address: 144 - 147 loaded
+cycle 165: DRAM request issued(Load)
+cycle 166-187: Instruction - lw $t4 1004($t8): $t4 = 0
+         DRAM Activity: Copy row 512 from buffer back to memory.
+                        Copy row 513 from memory to buffer.
+                        Copy Data at column 513 to $t4.
+                        Memory Address: 1148 - 1151 loaded
+cycle 188: DRAM request issued(Load)
+cycle 189-210: Instruction - lw $t3 12144($t1): $t3 = 0
+         DRAM Activity: Copy row 513 from buffer back to memory.
+                        Copy row 523 from memory to buffer.
+                        Copy Data at column 523 to $t3.
+                        Memory Address: 12244 - 12247 loaded
+cycle 211: DRAM request issued(Load)
+cycle 212-233: Instruction - lw $t4 2104($t8): $t4 = 0
+         DRAM Activity: Copy row 523 from buffer back to memory.
+                        Copy row 514 from memory to buffer.
+                        Copy Data at column 514 to $t4.
+                        Memory Address: 2248 - 2251 loaded
+cycle 234: DRAM request issued(Store)
+cycle 235-256: Instruction - sw $t1 12144($t6): 
+         DRAM Activity: Copy row 514 from buffer back to memory.
+                        Copy row 523 from memory to buffer.
+                        Copy Data to column 880 from $t6.
+                        Memory Address: 12144 - 12147 = 100
+cycle 257: DRAM request issued(Load)
+cycle 258-279: Instruction - lw $t5 9444($zero): $t5 = 0
+         DRAM Activity: Copy row 523 from buffer back to memory.
+                        Copy row 521 from memory to buffer.
+                        Copy Data at column 521 to $t5.
+                        Memory Address: 9444 - 9447 loaded
+cycle 280: DRAM request issued(Store)
+cycle 281-282: Instruction - sw $t1 9248($t6): 
+         DRAM Activity: Copy Data to column 32 from $t6.
+                        Memory Address: 9248 - 9251 = 100
+
+Executing Write-Back. Write-Back clock cycles are excluded below.
+
+Total clock cycles: 282
+Total row buffer updates: 21
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 2, beq: 0, bne: 0, j: 0
+lw: 19, mul: 0, slt: 0, sub: 0, sw: 11
+Program executed successfully!

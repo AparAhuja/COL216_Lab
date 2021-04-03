@@ -1,0 +1,58 @@
+addi $t0 $t0 100
+sw $t0 104($zero)
+lw $t1 4($t0)
+addi $t1 $t1 1
+addi $t3 $t3 1
+sw $t0 96($zero)
+add $t1 $t1 $t3
+add $t2 $t2 $t3
+add $t3 $t3 $t3
+addi $t0 $t0 2
+sw $t0 96($zero)
+add $t1 $t1 $t3
+add $t3 $t3 $t3
+addi $t0 $t0 2
+add $t2 $t2 $t3
+add $t2 $t2 $t3
+
+________OUTPUT________
+
+cycle 1: Instruction - addi $t0 $t0 100: $t0 = 100
+cycle 2: DRAM request issued(Store)
+cycle 3-14: Instruction - sw $t0 104($zero): 
+         DRAM Activity: Copy row 512 from memory to buffer.
+                        Copy Data to column 104 from $zero.
+                        Memory Address: 104 - 107 = 100
+cycle 15: DRAM request issued(Load)
+cycle 16-17: Instruction - lw $t1 4($t0): $t1 = 100
+         DRAM Activity: Copy Data at column 512 to $t1.
+                        Memory Address: 104 - 107 loaded
+cycle 18: Instruction - addi $t1 $t1 1: $t1 = 101
+cycle 19: Instruction - addi $t3 $t3 1: $t3 = 1
+cycle 20: DRAM request issued(Store)
+cycle 21: Instruction - add $t1 $t1 $t3: $t1 = 102
+cycle 22: Instruction - add $t2 $t2 $t3: $t2 = 1
+cycle 21-22: Instruction - sw $t0 96($zero): 
+         DRAM Activity: Copy Data to column 96 from $zero.
+                        Memory Address: 96 - 99 = 100
+cycle 23: Instruction - add $t3 $t3 $t3: $t3 = 2
+cycle 24: Instruction - addi $t0 $t0 2: $t0 = 102
+cycle 25: DRAM request issued(Store)
+cycle 26: Instruction - add $t1 $t1 $t3: $t1 = 104
+cycle 27: Instruction - add $t3 $t3 $t3: $t3 = 4
+cycle 26-27: Instruction - sw $t0 96($zero): 
+         DRAM Activity: Copy Data to column 96 from $zero.
+                        Memory Address: 96 - 99 = 102
+cycle 28: Instruction - addi $t0 $t0 2: $t0 = 104
+cycle 29: Instruction - add $t2 $t2 $t3: $t2 = 5
+cycle 30: Instruction - add $t2 $t2 $t3: $t2 = 9
+
+Executing Write-Back. Write-Back clock cycles are excluded below.
+
+Total clock cycles: 30
+Total row buffer updates: 4
+
+Number of instructions executed for each type are given below:-
+add: 7, addi: 5, beq: 0, bne: 0, j: 0
+lw: 1, mul: 0, slt: 0, sub: 0, sw: 3
+Program executed successfully!

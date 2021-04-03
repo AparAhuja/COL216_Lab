@@ -1,0 +1,42 @@
+addi $t1 $t1 5
+addi $t2 $t2 3
+addi $t3 $t3 1
+addi $t5 $t5 1
+loop: 
+slt $t4 $t2 $t3
+bne $t4 $zero exit
+mul $t5 $t5 $t1
+addi $t2 $t2 -1
+j loop
+exit:
+
+________OUTPUT________
+
+cycle 1: Instruction - addi $t1 $t1 5: $t1 = 5
+cycle 2: Instruction - addi $t2 $t2 3: $t2 = 3
+cycle 3: Instruction - addi $t3 $t3 1: $t3 = 1
+cycle 4: Instruction - addi $t5 $t5 1: $t5 = 1
+cycle 5: Instruction - SLT $t4 $t2 $t3: $t4 = 0
+cycle 6: Instruction - BNE
+cycle 7: Instruction - mul $t5 $t5 $t1: $t5 = 5
+cycle 8: Instruction - addi $t2 $t2 -1: $t2 = 2
+cycle 9: Instruction - Jump
+cycle 10: Instruction - SLT $t4 $t2 $t3: $t4 = 0
+cycle 11: Instruction - BNE
+cycle 12: Instruction - mul $t5 $t5 $t1: $t5 = 25
+cycle 13: Instruction - addi $t2 $t2 -1: $t2 = 1
+cycle 14: Instruction - Jump
+cycle 15: Instruction - SLT $t4 $t2 $t3: $t4 = 0
+cycle 16: Instruction - BNE
+cycle 17: Instruction - mul $t5 $t5 $t1: $t5 = 125
+cycle 18: Instruction - addi $t2 $t2 -1: $t2 = 0
+cycle 19: Instruction - Jump
+cycle 20: Instruction - SLT $t4 $t2 $t3: $t4 = 1
+cycle 21: Instruction - BNE
+Total clock cycles: 21
+Total row buffer updates: 0
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 7, beq: 0, bne: 4, j: 3
+lw: 0, mul: 3, slt: 4, sub: 0, sw: 0
+Program executed successfully!

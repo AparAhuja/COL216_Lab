@@ -1,0 +1,30 @@
+addi $t0 $t0 100
+sw $t0 100($zero)
+lw $t1 0($t0)
+addi $t2 $t2 1
+addi $t2 $t2 1
+
+________OUTPUT________
+
+cycle 1: Instruction - addi $t0 $t0 100: $t0 = 100
+cycle 2: DRAM request issued(Store)
+cycle 3-14: Instruction - sw $t0 100($zero): 
+         DRAM Activity: Copy row 512 from memory to buffer.
+                        Copy Data to column 100 from $zero.
+                        Memory Address: 100 - 103 = 100
+cycle 15: DRAM request issued(Load)
+cycle 16: Instruction - addi $t2 $t2 1: $t2 = 1
+cycle 17: Instruction - addi $t2 $t2 1: $t2 = 2
+cycle 16-17: Instruction - lw $t1 0($t0): $t1 = 100
+         DRAM Activity: Copy Data at column 512 to $t1.
+                        Memory Address: 100 - 103 loaded
+
+Executing Write-Back. Write-Back clock cycles are excluded below.
+
+Total clock cycles: 17
+Total row buffer updates: 2
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 3, beq: 0, bne: 0, j: 0
+lw: 1, mul: 0, slt: 0, sub: 0, sw: 1
+Program executed successfully!
