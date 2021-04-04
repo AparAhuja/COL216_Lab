@@ -29,7 +29,7 @@ struct DRAM {
         return (adjIndex = Adj.size());
     }
 
-    int BinarySearch(int key, int low, int high, vector<int> vec) {
+    int BinarySearch(int key, int low, int high, vector<int> &vec) {
         int mid;
         while(low < high) {
             mid = (low + high) / 2;
@@ -37,22 +37,19 @@ struct DRAM {
                 low = mid + 1;
             }
             else {
-                // vec[mid] >= key
+                //assert: vec[mid] >= key
                 high = mid;
             }
         }
-        if(low == high) {
-            if(vec[low] >= key) {
-                return low;
-            }
-            else {
-                return vec.size();
-            }    
+        //assert: low = high
+        if(vec[low] >= key) {
+            //check vec[low]
+            return low;
         }
-        return vec.size();
+        return vec.size();    
     }
 
-    void addRequest(Request req) {
+    void addRequest(Request &req) {
         int loc;
         string memAddr;
         if(MemToAdj.find(req.row) == MemToAdj.end()) {
