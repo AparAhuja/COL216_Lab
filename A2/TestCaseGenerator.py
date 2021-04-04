@@ -1,6 +1,6 @@
-no_of_cases = 10                 #Number of test cases
-no_of_operators = 80              #Number of operators
-FILE_NAME = "Mixed_XLarge"
+no_of_cases = 5                 #Number of test cases
+no_of_operators = 10              #Number of operators
+FILE_NAME = "All"
 opArray = ['-','*','+']
 
 

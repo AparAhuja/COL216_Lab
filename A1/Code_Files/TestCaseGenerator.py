@@ -1,7 +1,7 @@
 no_of_cases = 1     #Number of test cases
-max_val_of_n = 6               #Number of points in a test case
-min_val_of_x_coordinate = -5  #Minimum value of x coordinate
-max_val_of_x_coordinate = 5  #Maximum value of x coordinate
+max_val_of_n = 20               #Number of points in a test case
+min_val_of_x_coordinate = -10  #Minimum value of x coordinate
+max_val_of_x_coordinate = 10  #Maximum value of x coordinate
 min_val_of_y_coordinate = -10
 max_val_of_y_coordinate = 10
 
@@ -22,8 +22,7 @@ def output(a):
     g.write(str(area)+"\n")
 
 for _ in range(no_of_cases):
-    # n = random.randint(2, max_val_of_n)
-    n = max_val_of_n
+    n = random.randint(2, max_val_of_n)
     f.write(str(n)+"\n")
     array=[]
     for _ in range(n):

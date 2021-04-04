@@ -31,6 +31,8 @@ struct DRAM {
 
     int BinarySearch(int key, int low, int high, vector<int> &vec) {
         int mid;
+        if(low > high)
+            return vec.size();
         while(low < high) {
             mid = (low + high) / 2;
             if(vec[mid] < key) {
@@ -49,7 +51,7 @@ struct DRAM {
         return vec.size();    
     }
 
-    void addRequest(Request &req) {
+    void addRequest(Request req) {
         int loc;
         string memAddr;
         if(MemToAdj.find(req.row) == MemToAdj.end()) {
