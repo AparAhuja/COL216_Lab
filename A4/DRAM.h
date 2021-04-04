@@ -49,7 +49,7 @@ struct DRAM {
         return vec.size();    
     }
 
-    void addRequest(Request &req) {
+    void addRequest(Request req) {
         int loc;
         string memAddr;
         if(MemToAdj.find(req.row) == MemToAdj.end()) {
