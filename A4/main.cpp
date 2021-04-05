@@ -413,11 +413,11 @@ struct REGI {
         // increment PC by 4
         PC += 4;
         if(ins_num == 7) {
-            Request req = {addr - DATA_START, (addr - DATA_START) / 1024, 0, dest, "lw"};
+            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, 0, dest, "lw"};
             q.addRequest(req);
         }    
         else {  
-            Request req = {addr - DATA_START, (addr - DATA_START) / 1024, reg[dest], 0, "sw"};  
+            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, reg[dest], 0, "sw"};
             q.addRequest(req);
         }   
         return true;     
