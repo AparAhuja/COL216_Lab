@@ -15,7 +15,7 @@ struct Request {
     string type;    
 };
 
-struct DRAM {
+struct Queue {
     map<int, vector<int>> MemToAdj;
     map<string, pair<int, int>> Pread, Pwrite;
     map<int, string> reverseMap =
@@ -26,7 +26,7 @@ struct DRAM {
     int adjIndex = 0;
     
     bool isEmpty() {
-        return (adjIndex = Adj.size());
+        return (adjIndex == Adj.size());
     }
 
     int BinarySearch(int key, int low, int high, vector<int> &vec) {
