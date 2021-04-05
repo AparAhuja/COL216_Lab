@@ -12,7 +12,8 @@ struct Request {
     int row;
     int data_bus;
     int destination;
-    string type;    
+    string type;
+    string instruction;
 };
 
 struct Queue {
