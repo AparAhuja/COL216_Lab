@@ -439,35 +439,12 @@ struct REGI {
         if (iter == memoryAddress.end())
             memoryAddress.push_back(addr);
        
-       // check if row buffer is empty or not
-       if (isEmpty) {
-            // load the row in buffer (will take a total of ROW_ACCESS_DELAY clock cycles)
-            loadBuffer(row_start, row_end);
-            // update start and end values
-            start = row_start;
-            end = row_end;
-            isEmpty = false;
-            copies++;
-            if(type == "lw") {value_read++; doWriteback = false;}
+        // check if the current buffer row is different from current row or not
+        if (start == row_start) {
+            if(type == "lw") {value_read++;}
             if(type == "sw") {value_write++; doWriteback = true;}
-                
-            // simultaneously execute independent instructions if any
-            while (count < ROW_ACCESS_DELAY) {
-                if(MODE)
-                    flag = executeIndependent(q);
-
-                if (temp == cycle_cnt) {
-                    cycle_cnt++;
-                    temp++;
-                }
-                else {
-                    temp = cycle_cnt;
-                }
-                if (!flag) return flag;
-                count++;
-            }
-            count = 0;
-            // update register value
+            //row buffer is the same, so no loading required
+            
             while (count < COL_ACCESS_DELAY) {
                 if(MODE)
                     flag = executeIndependent(q);
@@ -482,129 +459,99 @@ struct REGI {
                 if (!flag) return flag;
                 count++;
             }
-           
-            // count == COL_ACCESS_DELAY
-            cycle_end = cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY;
+            cycle_end = cycle_start + COL_ACCESS_DELAY;
             cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
-            cout << "\t  ACTIVATION: Cycle " << cycle_start + 1 << "-" << cycle_start + ROW_ACCESS_DELAY << ":" << " Copying from DRAM to ROW BUFFER (Row (Data section): " << row_start - DATA_START << "-" << row_end - DATA_START << ")\n";
-            if(type == "lw"){
+            if(type == "lw") {
                 reg[req.destination] = (req.destination==0)?0:ROW_BUFFER[addr - row_start];
-                cout << "\t  READ:       Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr - row_start]) << ")\n\n";
+                cout << "\t  READ:  Cycle " << cycle_start + 1 << "-" << cycle_start + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr - row_start]) << ")\n\n";
             }
-            if(type == "sw"){
+            if(type == "sw") {
                 ROW_BUFFER[addr - row_start] = req.data_bus;
-                cout << "\t  WRITE:      Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
+                cout << "\t  WRITE: Cycle " << cycle_start + 1 << "-" << cycle_start + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
             }
         }
+       
         else {
-            // check if the current buffer row is different from current row or not
-            if (start == row_start) {
-                if(type == "lw") {value_read++;}
-                if(type == "sw") {value_write++; doWriteback = true;}
-                //row buffer is the same, so no loading required
-                
-                while (count < COL_ACCESS_DELAY) {
-                    if(MODE)
-                        flag = executeIndependent(q);
-
-                    if (temp == cycle_cnt) {
-                        cycle_cnt++;
-                        temp++;
-                    }
-                    else {
-                        temp = cycle_cnt;
-                    }
-                    if (!flag) return flag;
-                    count++;
-                }
-                cycle_end = cycle_start + COL_ACCESS_DELAY;
-                cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
-                if(type == "lw") {
-                    reg[req.destination] = (req.destination==0)?0:ROW_BUFFER[addr - row_start];
-                    cout << "\t  READ:  Cycle " << cycle_start + 1 << "-" << cycle_start + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr - row_start]) << ")\n\n";
-                }
-                if(type == "sw") {
-                    ROW_BUFFER[addr - row_start] = req.data_bus;
-                    cout << "\t  WRITE: Cycle " << cycle_start + 1 << "-" << cycle_start + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
-                }
-            }
-            else {
-                // row buffer is different, so write it back to memory
-                // will take ROW_ACCESS_DELAY cycles
+            // row buffer is different, so write it back to memory
+            // will take ROW_ACCESS_DELAY cycles
+            if(!isEmpty){
                 for (int i = 0; i < 1024; i++) {
                     DRAM[start + i] = ROW_BUFFER[i];
                 }
-                // now load the new row
-                loadBuffer(row_start, row_end);
+                while (count < ROW_ACCESS_DELAY) {
+                    if(MODE)
+                        flag = executeIndependent(q);
+
+                    if (temp == cycle_cnt) {
+                        cycle_cnt++;
+                        temp++;
+                    }
+                    else {
+                        temp = cycle_cnt;
+                    }
+                    if (!flag) return flag;
+                    count++;
+                }
                 writebacks++;
-                copies++;
-                if(type == "lw") {value_read++; doWriteback = false;}
-                if(type == "sw") {value_write++; doWriteback = true;}
-                
-                // update start and end values
-                start = row_start;
-                end = row_end;
-                while (count < ROW_ACCESS_DELAY) {
-                    if(MODE)
-                        flag = executeIndependent(q);
-
-                    if (temp == cycle_cnt) {
-                        cycle_cnt++;
-                        temp++;
-                    }
-                    else {
-                        temp = cycle_cnt;
-                    }
-                    if (!flag) return flag;
-                    count++;
-                }
-                // execute independent instructions
-                count = 0;
-                while (count < ROW_ACCESS_DELAY) {
-                    if(MODE)
-                        flag = executeIndependent(q);
-
-                    if (temp == cycle_cnt) {
-                        cycle_cnt++;
-                        temp++;
-                    }
-                    else {
-                        temp = cycle_cnt;
-                    }
-                    if (!flag) return flag;
-                    count++;
-                }
-                // update register value
-                count = 0;
-                while (count < COL_ACCESS_DELAY) {
-                    if(MODE)
-                        flag = executeIndependent(q);
-
-                    if (temp == cycle_cnt) {
-                        cycle_cnt++;
-                        temp++;
-                    }
-                    else {
-                        temp = cycle_cnt;
-                    }
-                    if (!flag) return flag;
-                    count++;
-                }
-                
-                cycle_end = cycle_start + 2 * ROW_ACCESS_DELAY + COL_ACCESS_DELAY;
-                cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
-                cout << "\t  WRITEBACK:  Cycle " << cycle_start + 1 << "-" << cycle_start + ROW_ACCESS_DELAY << ":" << " Copying from ROW BUFFER to DRAM (Row (Data section): " << start - DATA_START << "-" << end - DATA_START << ")\n";
-                cout << "\t  ACTIVATION: Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + 2 * ROW_ACCESS_DELAY << ":" << " Copying from DRAM to ROW BUFFER (Row (Data section): " << row_start - DATA_START << "-" << row_end - DATA_START << ")\n";
-                if(type == "lw") {
-                    reg[req.destination] = (req.destination==0)?0:ROW_BUFFER[addr - row_start];
-                    cout << "\t  READ:       Cycle " << cycle_start + 2 * ROW_ACCESS_DELAY + 1 << "-" << cycle_start + 2 * ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr - row_start]) << ")\n\n";
-                }
-                if(type == "sw") {
-                    ROW_BUFFER[addr - row_start] = req.data_bus;
-                    cout << "\t  WRITE:      Cycle " << cycle_start + 2 * ROW_ACCESS_DELAY + 1 << "-" << cycle_start + 2 * ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
-                }
             }
+            // now load the new row
+            loadBuffer(row_start, row_end);
+            copies++;
+            if(type == "lw") {value_read++; doWriteback = false;}
+            if(type == "sw") {value_write++; doWriteback = true;}
+            
+            // update start and end values
+            start = row_start;
+            end = row_end;
+            
+            // execute independent instructions
+            count = 0;
+            while (count < ROW_ACCESS_DELAY) {
+                if(MODE)
+                    flag = executeIndependent(q);
+
+                if (temp == cycle_cnt) {
+                    cycle_cnt++;
+                    temp++;
+                }
+                else {
+                    temp = cycle_cnt;
+                }
+                if (!flag) return flag;
+                count++;
+            }
+            // update register value
+            count = 0;
+            while (count < COL_ACCESS_DELAY) {
+                if(MODE)
+                    flag = executeIndependent(q);
+
+                if (temp == cycle_cnt) {
+                    cycle_cnt++;
+                    temp++;
+                }
+                else {
+                    temp = cycle_cnt;
+                }
+                if (!flag) return flag;
+                count++;
+            }
+            cycle_start = cycle_start + (1 - isEmpty) * ROW_ACCESS_DELAY;
+            cycle_end = cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY;
+            cout<<"Cycle "<<cycle_start - (1 - isEmpty) * ROW_ACCESS_DELAY + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
+            if(!isEmpty) {cout << "\t  WRITEBACK:  Cycle " << cycle_start - ROW_ACCESS_DELAY + 1 << "-" << cycle_start << ":" << " Copying from ROW BUFFER to DRAM (Row (Data section): " << start - DATA_START << "-" << end - DATA_START << ")\n";}
+            cout << "\t  ACTIVATION: Cycle " << cycle_start + 1 << "-" << cycle_start + ROW_ACCESS_DELAY << ":" << " Copying from DRAM to ROW BUFFER (Row (Data section): " << row_start - DATA_START << "-" << row_end - DATA_START << ")\n";
+            if(type == "lw") {
+                reg[req.destination] = (req.destination==0)?0:ROW_BUFFER[addr - row_start];
+                cout << "\t  READ:       Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr - row_start]) << ")\n\n";
+            }
+            if(type == "sw") {
+                ROW_BUFFER[addr - row_start] = req.data_bus;
+                cout << "\t  WRITE:      Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
+            }
+            isEmpty = false;
         }
+        
         q.deleteRequest();
         // execution completed (both load word and other independent instructions)
         return true;
