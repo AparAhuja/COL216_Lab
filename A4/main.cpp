@@ -434,7 +434,7 @@ struct REGI {
             memoryAddress.push_back(addr);
         }    
        
-        cout << "Cycle " << cycle_start + 1 << ":" << " DRAM processing for Instruction: " << req.instruction << ": started.\n\n";
+        cout << "DRAM PROCESSING STARTED: Cycle: " << cycle_start + 1 << ": Instruction: " << req.instruction << "\n\n";
         // check if the current buffer row is different from current row or not
         if (start == row_start) {
             if(type == "lw") {value_read++;}
@@ -690,12 +690,13 @@ struct REGI {
     }
 
     void buffer() {
+        cout << "PROGRAM EXECUTION ENDED.";
         if (!isEmpty && doWriteback) {
             writebacks++;
             for (int i = 0; i < 1024; i++) {
                 DRAM[start + i] = ROW_BUFFER[i];
             }
-            cout << "Final writeback:\n";
+            cout << "\nExecuting pending writeback:\n";
             cout << "Cycle " << cycle_cnt + 1 << ": DRAM request issued\n";
             cout << "Cycle " << cycle_cnt + 2 << "-" << cycle_cnt + ROW_ACCESS_DELAY + 1 << ":" << " WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : " << start - DATA_START << "-" << end - DATA_START << ")\n";
             cycle_cnt = cycle_cnt + ROW_ACCESS_DELAY + 1;
@@ -1034,11 +1035,14 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
 
 
 string removeSpaces(string line){
-    int i = 0;
+    int i = 0, j = line.length() - 1;
     while(i<line.length() && (line.at(i) == ' ' || line.at(i) == '\t')){
         i++;
     }
-    return line.substr(i, line.length() - i);
+    while(j >= 0 && (line.at(j) == ' ' || line.at(j) == '\t')){
+        j--;
+    }
+    return line.substr(i, j + 1 - i);
 }
 
 // function used to a line of MIPS code to memory, if it is an instruction
