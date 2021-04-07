@@ -78,7 +78,13 @@ struct Queue {
                 // Update pending write (register)
                 int regCode = req.destination;
                 string reg = reverseMap[regCode];
-                Pwrite.insert({reg, make_pair(loc, 1)});
+                if(Pwrite.find(reg) == Pwrite.end()) {
+                    Pwrite.insert({reg, make_pair(loc, 1)});
+                }
+                else {
+                    Pwrite[reg].first = loc;
+                    Pwrite[reg].second = Pwrite[reg].second + 1;
+                }    
             }
         }
         else {
@@ -143,6 +149,7 @@ struct Queue {
                             }
                             else {
                                 // Update Pread
+                                Pread[memAddr].first = loc > Pread[memAddr].first ? loc : Pread[memAddr].first;
                                 Pread[memAddr].second = Pread[memAddr].second + 1;
                             }
                             // Add register to Pwrite
@@ -161,6 +168,7 @@ struct Queue {
                             }
                             else {
                                 // Update Pread
+                                Pread[memAddr].first = loc > Pread[memAddr].first ? loc : Pread[memAddr].first;
                                 Pread[memAddr].second = Pread[memAddr].second + 1;
                             }
                             // Add register to Pwrite
@@ -239,6 +247,10 @@ struct Queue {
                     }
                 }
             }
+        }
+        // remove pending write on zero register if any
+        if(Pwrite.find("$zero") != Pwrite.end()) {
+            Pwrite.erase("$zero");
         }
     }
 
