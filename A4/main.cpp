@@ -359,33 +359,27 @@ struct REGI {
         }
     }
 
-    bool lw(int dest, int offset, int src, Queue &q) {
+    bool lw(int r1, int offset, int r2, Queue &q) {
         bool flag;
 
-        flag = raiseRequest(dest, offset, src, q, 7);
+        flag = raiseRequest(r1, offset, r2, q, 7);
         if(!flag) return flag;
-
-        // execute independent instructions
-        flag = NonBlockLW(q);
         
         return flag;
     }
 
-    bool sw(int dest, int offset, int src, Queue &q) {
+    bool sw(int r1, int offset, int r2, Queue &q) {
         bool flag;
 
-        flag = raiseRequest(dest, offset, src, q, 8);
+        flag = raiseRequest(r1, offset, r2, q, 8);
         if(!flag) return flag;
-
-        // execute independent instructions
-        flag = NonBlockLW(q);
 
         return flag;
     }
 
-    bool raiseRequest(int dest, int offset, int src, Queue &q, int ins_num) {
+    bool raiseRequest(int r1, int offset, int r2, Queue &q, int ins_num) {
         // check if address is valid
-        long long addr = (long long)offset + (long long)reg[src] + (long long)DATA_START;
+        long long addr = (long long)offset + (long long)reg[r2] + (long long)DATA_START;
         if (addr >= 1048576 || addr < DATA_START) {
             // invalid address, error
             cout << "Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
@@ -406,16 +400,18 @@ struct REGI {
         stat_update(ins_num);
         cout << "Cycle " << cycle_cnt << ": ";
         cout << "DRAM request issued for Instruction: " << instructions[PC / 4] << "\n\n";
-        // increment PC by 4
-        PC += 4;
+        
+        // add request to Queue
         if(ins_num == 7) {
-            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, 0, dest, "lw", instructions[PC/4 - 1]};
+            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, 0, r1, "lw", instructions[PC/4]};
             q.addRequest(req);
         }    
         else {  
-            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, reg[dest], 0, "sw", instructions[PC/4 - 1]};
+            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, reg[r1], 0, "sw", instructions[PC/4]};
             q.addRequest(req);
-        }   
+        }
+        // increment PC by 4
+        PC += 4;
         return true;     
     }
 
@@ -432,19 +428,18 @@ struct REGI {
         int src = req.destination;
         int data = req.data_bus;
         string type = req.type;
-        vector<int>::iterator iter = find(memoryAddress.begin(), memoryAddress.end(), addr);
-       
         int cycle_start = cycle_cnt, cycle_end;
-
-        if (iter == memoryAddress.end())
+        vector<int>::iterator iter = find(memoryAddress.begin(), memoryAddress.end(), addr);
+        if (iter == memoryAddress.end()) {
             memoryAddress.push_back(addr);
+        }    
        
+        cout << "Cycle " << cycle_start + 1 << ":" << " DRAM processing for Instruction: " << req.instruction << ": started.\n\n";
         // check if the current buffer row is different from current row or not
         if (start == row_start) {
             if(type == "lw") {value_read++;}
             if(type == "sw") {value_write++; doWriteback = true;}
             //row buffer is the same, so no loading required
-            
             while (count < COL_ACCESS_DELAY) {
                 if(MODE)
                     flag = executeIndependent(q);
@@ -460,7 +455,7 @@ struct REGI {
                 count++;
             }
             cycle_end = cycle_start + COL_ACCESS_DELAY;
-            cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
+            cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM processing for Instruction: " << req.instruction << ": completed.\n";
             if(type == "lw") {
                 reg[req.destination] = (req.destination==0)?0:ROW_BUFFER[addr - row_start];
                 cout << "\t  READ:  Cycle " << cycle_start + 1 << "-" << cycle_start + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr - row_start]) << ")\n\n";
@@ -586,10 +581,10 @@ struct REGI {
         ins_cnt[ins_code]++;
     }
 
-bool inPwrite(Queue &q, int val1, int val2 = -1, int val3 = -1) {
-    string s1 = num_reg[val1], s2 = num_reg[val2], s3 = num_reg[val3];
-    return (q.Pwrite.find(s1) != q.Pwrite.end() || q.Pwrite.find(s2) != q.Pwrite.end() || q.Pwrite.find(s3) != q.Pwrite.end());
-}
+    bool inPwrite(Queue &q, int val1, int val2 = -1, int val3 = -1) {
+        string s1 = num_reg[val1], s2 = num_reg[val2], s3 = num_reg[val3];
+        return (q.Pwrite.find(s1) != q.Pwrite.end() || q.Pwrite.find(s2) != q.Pwrite.end() || q.Pwrite.find(s3) != q.Pwrite.end());
+    }
 
     void loadBuffer(int row_start, int row_end) {
         // load memory row into buffer
@@ -717,64 +712,65 @@ bool simulator(REGI& rf, Queue &q) {
 
     // while program counter is less than PARTITION
     while (PC < PARTITION) {
-
+        
+        // get instruction code
         ins_code = DRAM[PC];
 
         switch (ins_code) {
             // add
-        case 0:
-            flag = rf.add(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
-            if (flag) PC += 4;
-            else return flag;
-            break;
-            // sub
-        case 1:
-            flag = rf.sub(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
-            if (flag) PC += 4;
-            else return flag;
-            break;
-            // mul
-        case 2:
-            flag = rf.mul(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
-            if (flag) PC += 4;
-            else return flag;
-            break;
-            // beq
-        case 3:
-            flag = rf.beq(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
-            if (!flag) return flag;
-            break;
-            // bne
-        case 4:
-            flag = rf.bne(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
-            if (!flag) return flag;
-            break;
-            // slt
-        case 5:
-            rf.slt(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
-            PC += 4;
-            break;
-            // j
-        case 6:
-            flag = rf.j(DRAM[PC + 1]);
-            if (!flag) return flag;
-            break;
-            // lw
-        case 7:
-            flag = rf.lw(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3], q);
-            if (!flag) return flag;
-            break;
-            // sw
-        case 8:
-            flag = rf.sw(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3], q);
-            if (!flag) return flag;
-            break;
-            // addi                
-        case 9:
-            flag = rf.addi(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
-            if (flag) PC += 4;
-            else return flag;
-            break;
+            case 0:
+                flag = rf.add(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
+                if (flag) PC += 4;
+                else return flag;
+                break;
+                // sub
+            case 1:
+                flag = rf.sub(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
+                if (flag) PC += 4;
+                else return flag;
+                break;
+                // mul
+            case 2:
+                flag = rf.mul(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
+                if (flag) PC += 4;
+                else return flag;
+                break;
+                // beq
+            case 3:
+                flag = rf.beq(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
+                if (!flag) return flag;
+                break;
+                // bne
+            case 4:
+                flag = rf.bne(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
+                if (!flag) return flag;
+                break;
+                // slt
+            case 5:
+                rf.slt(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
+                PC += 4;
+                break;
+                // j
+            case 6:
+                flag = rf.j(DRAM[PC + 1]);
+                if (!flag) return flag;
+                break;
+                // lw
+            case 7:
+                flag = rf.lw(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3], q);
+                if (!flag) return flag;
+                break;
+                // sw
+            case 8:
+                flag = rf.sw(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3], q);
+                if (!flag) return flag;
+                break;
+                // addi                
+            case 9:
+                flag = rf.addi(DRAM[PC + 1], DRAM[PC + 2], DRAM[PC + 3]);
+                if (flag) PC += 4;
+                else return flag;
+                break;
         }
         while(!q.isEmpty()) {
             flag = rf.NonBlockLW(q);
@@ -1369,7 +1365,7 @@ int main(int argc, char** argv) {
         if (argc >= 5) {
             if (!isInteger(argv[4])) {
                 // mode is not an integer
-                cout << "ERROR: Operating mode is not an integer. Either enter 0 or 1. Program terminating!\n";
+                cout << "ERROR: Operating mode is not an integer. Enter 0 or 1. Program terminating!\n";
                 return 0;
             }
             else {
@@ -1398,6 +1394,7 @@ int main(int argc, char** argv) {
 
     // create register file
     REGI rf;
+    // create DRAM queue
     Queue q;
 
     // variable to store a line
