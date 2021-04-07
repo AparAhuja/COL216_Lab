@@ -1,0 +1,20 @@
+addi $t2 $t2 12
+add $t3 $t2, $t6
+addi $t1 $s2, 33
+add $v1 $t2, $t3
+addi $t2 $t2, 334
+
+________OUTPUT________
+
+cycle 1: Instruction - addi $t2 $t2 12: $t2 = 12
+cycle 2: Instruction - add $t3 $t2 $t6: $t3 = 12
+cycle 3: Instruction - addi $t1 $s2 33: $t1 = 33
+cycle 4: Instruction - add $v1 $t2 $t3: $v1 = 24
+cycle 5: Instruction - addi $t2 $t2 334: $t2 = 346
+Total clock cycles: 5
+Total row buffer updates: 0
+
+Number of instructions executed for each type are given below:-
+add: 2, addi: 3, beq: 0, bne: 0, j: 0
+lw: 0, mul: 0, slt: 0, sub: 0, sw: 0
+Program executed successfully!

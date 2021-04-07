@@ -1,0 +1,70 @@
+addi $s2 $s1 -1292
+add $v1 $s2, $t6
+addi $s3 $s2, -1232
+add $s1 $t5, $t3
+add $t4 $s2, $t3
+addi $t8 $s2 144
+addi $s3 $t8, 512
+addi $v1 $t2, 66
+add $v1 $s2, $t6
+add $t2 $t3, $t2
+addi $t6 $s2 121
+addi $t1 $s2, -622
+addi $v0 $t3, 223
+add $v0 $t5, $t5
+add $t7 $t8, $t7
+addi $t2 $t1 -1228
+add $s3 $t2, $t8
+addi $t3 $s2, 0012
+add $v0 $t5, $t2
+add $t3 $t2, $t2
+addi $t4 $t6 112
+addi $t3 $t5, 612
+addi $t1 $s2, 233
+add $v1 $t6, $t3
+add $t2 $t1, $t4
+addi $t6 $t2 122
+addi $v1 $s2, -62
+addi $t3 $t3, 22
+addi $v1 $v1, 137
+addi $t7 $t5, -3
+
+________OUTPUT________
+
+cycle 1: Instruction - addi $s2 $s1 -1292: $s2 = -1292
+cycle 2: Instruction - add $v1 $s2 $t6: $v1 = -1292
+cycle 3: Instruction - addi $s3 $s2 -1232: $s3 = -2524
+cycle 4: Instruction - add $s1 $t5 $t3: $s1 = 0
+cycle 5: Instruction - add $t4 $s2 $t3: $t4 = -1292
+cycle 6: Instruction - addi $t8 $s2 144: $t8 = -1148
+cycle 7: Instruction - addi $s3 $t8 512: $s3 = -636
+cycle 8: Instruction - addi $v1 $t2 66: $v1 = 66
+cycle 9: Instruction - add $v1 $s2 $t6: $v1 = -1292
+cycle 10: Instruction - add $t2 $t3 $t2: $t2 = 0
+cycle 11: Instruction - addi $t6 $s2 121: $t6 = -1171
+cycle 12: Instruction - addi $t1 $s2 -622: $t1 = -1914
+cycle 13: Instruction - addi $v0 $t3 223: $v0 = 223
+cycle 14: Instruction - add $v0 $t5 $t5: $v0 = 0
+cycle 15: Instruction - add $t7 $t8 $t7: $t7 = -1148
+cycle 16: Instruction - addi $t2 $t1 -1228: $t2 = -3142
+cycle 17: Instruction - add $s3 $t2 $t8: $s3 = -4290
+cycle 18: Instruction - addi $t3 $s2 12: $t3 = -1280
+cycle 19: Instruction - add $v0 $t5 $t2: $v0 = -3142
+cycle 20: Instruction - add $t3 $t2 $t2: $t3 = -6284
+cycle 21: Instruction - addi $t4 $t6 112: $t4 = -1059
+cycle 22: Instruction - addi $t3 $t5 612: $t3 = 612
+cycle 23: Instruction - addi $t1 $s2 233: $t1 = -1059
+cycle 24: Instruction - add $v1 $t6 $t3: $v1 = -559
+cycle 25: Instruction - add $t2 $t1 $t4: $t2 = -2118
+cycle 26: Instruction - addi $t6 $t2 122: $t6 = -1996
+cycle 27: Instruction - addi $v1 $s2 -62: $v1 = -1354
+cycle 28: Instruction - addi $t3 $t3 22: $t3 = 634
+cycle 29: Instruction - addi $v1 $v1 137: $v1 = -1217
+cycle 30: Instruction - addi $t7 $t5 -3: $t7 = -3
+Total clock cycles: 30
+Total row buffer updates: 0
+
+Number of instructions executed for each type are given below:-
+add: 12, addi: 18, beq: 0, bne: 0, j: 0
+lw: 0, mul: 0, slt: 0, sub: 0, sw: 0
+Program executed successfully!

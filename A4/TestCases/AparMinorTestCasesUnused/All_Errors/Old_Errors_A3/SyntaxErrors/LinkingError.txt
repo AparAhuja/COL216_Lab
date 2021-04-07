@@ -1,0 +1,9 @@
+addi $t0 $t0 2
+j loop
+sub $t1 $t0 $zero
+
+______________________
+
+Output:
+
+Error: Instruction memory overflow. Program terminating!

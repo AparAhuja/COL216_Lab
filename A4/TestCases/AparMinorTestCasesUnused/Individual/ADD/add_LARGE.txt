@@ -1,0 +1,77 @@
+addi $t1 $t2, 11
+addi $t2 $t2 12
+addi $t3 $t3 13
+
+add $t2 $t3, $t2
+add $s2 $t4, $t3
+add $t2 $t6, $t7
+add $s4 $t0, $t1
+add $t2 $t5, $s1
+add $t7 $t2, $s6
+add $s0 $zero, $t8
+add $t3 $t3, $t3
+add $t2 $t2, $zero
+add $t1 $t2, $t3
+add $s4 $t0, $t1
+add $zero $t5, $s1
+add $t7 $t2, $s6
+add $s4 $t0, $t1
+add $t2 $t5, $zero
+add $s4 $t0, $t1
+add $t2 $t5, $s1
+add $v0 $t2, $s6
+add $s4 $t0, $t1
+add $t2 $t5, $s1
+add $t3 $t3, $t3
+add $t2 $t2, $zero
+add $t1 $t2, $t3
+add $s4 $t0, $t1
+add $zero $t5, $s1
+add $t7 $t2, $s6
+add $s4 $t0, $t1
+add $t2 $t5, $zero
+add $t3 $t3, $t3
+add $t2 $t2, $t3
+
+________OUTPUT________
+
+cycle 1: Instruction - addi $t1 $t2 11: $t1 = 11
+cycle 2: Instruction - addi $t2 $t2 12: $t2 = 12
+cycle 3: Instruction - addi $t3 $t3 13: $t3 = 13
+cycle 4: Instruction - add $t2 $t3 $t2: $t2 = 25
+cycle 5: Instruction - add $s2 $t4 $t3: $s2 = 13
+cycle 6: Instruction - add $t2 $t6 $t7: $t2 = 0
+cycle 7: Instruction - add $s4 $t0 $t1: $s4 = 11
+cycle 8: Instruction - add $t2 $t5 $s1: $t2 = 0
+cycle 9: Instruction - add $t7 $t2 $s6: $t7 = 0
+cycle 10: Instruction - add $s0 $zero $t8: $s0 = 0
+cycle 11: Instruction - add $t3 $t3 $t3: $t3 = 26
+cycle 12: Instruction - add $t2 $t2 $zero: $t2 = 0
+cycle 13: Instruction - add $t1 $t2 $t3: $t1 = 26
+cycle 14: Instruction - add $s4 $t0 $t1: $s4 = 26
+cycle 15: Instruction - add $zero $t5 $s1: $zero = 0
+cycle 16: Instruction - add $t7 $t2 $s6: $t7 = 0
+cycle 17: Instruction - add $s4 $t0 $t1: $s4 = 26
+cycle 18: Instruction - add $t2 $t5 $zero: $t2 = 0
+cycle 19: Instruction - add $s4 $t0 $t1: $s4 = 26
+cycle 20: Instruction - add $t2 $t5 $s1: $t2 = 0
+cycle 21: Instruction - add $v0 $t2 $s6: $v0 = 0
+cycle 22: Instruction - add $s4 $t0 $t1: $s4 = 26
+cycle 23: Instruction - add $t2 $t5 $s1: $t2 = 0
+cycle 24: Instruction - add $t3 $t3 $t3: $t3 = 52
+cycle 25: Instruction - add $t2 $t2 $zero: $t2 = 0
+cycle 26: Instruction - add $t1 $t2 $t3: $t1 = 52
+cycle 27: Instruction - add $s4 $t0 $t1: $s4 = 52
+cycle 28: Instruction - add $zero $t5 $s1: $zero = 0
+cycle 29: Instruction - add $t7 $t2 $s6: $t7 = 0
+cycle 30: Instruction - add $s4 $t0 $t1: $s4 = 52
+cycle 31: Instruction - add $t2 $t5 $zero: $t2 = 0
+cycle 32: Instruction - add $t3 $t3 $t3: $t3 = 104
+cycle 33: Instruction - add $t2 $t2 $t3: $t2 = 104
+Total clock cycles: 33
+Total row buffer updates: 0
+
+Number of instructions executed for each type are given below:-
+add: 30, addi: 3, beq: 0, bne: 0, j: 0
+lw: 0, mul: 0, slt: 0, sub: 0, sw: 0
+Program executed successfully!

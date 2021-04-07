@@ -1,0 +1,78 @@
+addi $t1 $t1 99
+sw $t1  0 ( $t2 )
+sw $t3  4 ( $t2 )
+sw $t3  8 ( $t2 )
+sw $t5  12 ( $t2 )
+sw $t8  144 ( $t2 )
+
+_________OUTPUT________
+
+Cycle 1:
+Instruction executed: addi $t1 $t1 99
+Register modified: $t1 = 99 (0x00000063)
+
+Cycle 2: DRAM request issued for Instruction: sw $t1  0 ( $t2 )
+
+DRAM PROCESSING STARTED: Cycle: 3: Instruction: sw $t1  0 ( $t2 )
+
+Cycle 3: DRAM request issued for Instruction: sw $t3  4 ( $t2 )
+
+Cycle 4: DRAM request issued for Instruction: sw $t3  8 ( $t2 )
+
+Cycle 5: DRAM request issued for Instruction: sw $t5  12 ( $t2 )
+
+Cycle 6: DRAM request issued for Instruction: sw $t8  144 ( $t2 )
+
+Cycle 3-14: DRAM request completed for Instruction: sw $t1  0 ( $t2 )
+	  ACTIVATION: Cycle 3-12: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  WRITE:      Cycle 13-14: Data updated in ROW BUFFER: Memory Address (Data section): 0-3 = 99 (0x00000063)
+
+DRAM PROCESSING STARTED: Cycle: 15: Instruction: sw $t3  4 ( $t2 )
+
+Cycle 15-16: DRAM processing for Instruction: sw $t3  4 ( $t2 ): completed.
+	  WRITE: Cycle 15-16: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 17: Instruction: sw $t3  8 ( $t2 )
+
+Cycle 17-18: DRAM processing for Instruction: sw $t3  8 ( $t2 ): completed.
+	  WRITE: Cycle 17-18: Data updated in ROW BUFFER: Memory Address (Data section): 8-11 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 19: Instruction: sw $t5  12 ( $t2 )
+
+Cycle 19-20: DRAM processing for Instruction: sw $t5  12 ( $t2 ): completed.
+	  WRITE: Cycle 19-20: Data updated in ROW BUFFER: Memory Address (Data section): 12-15 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 21: Instruction: sw $t8  144 ( $t2 )
+
+Cycle 21-22: DRAM processing for Instruction: sw $t8  144 ( $t2 ): completed.
+	  WRITE: Cycle 21-22: Data updated in ROW BUFFER: Memory Address (Data section): 144-147 = 0 (0x00000000)
+
+PROGRAM EXECUTION ENDED.
+Executing pending writeback:
+Cycle 23: DRAM request issued
+Cycle 24-33: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+______________________________________________________________________________________________________
+
+Total clock cycles: 33
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 1, beq: 0, bne: 0, j: 0
+lw: 0, mul: 0, slt: 0, sub: 0, sw: 5
+
+Memory content at the end of the execution (Data section):
+0-3 = 0 (0x00000000)
+4-7 = 0 (0x00000000)
+8-11 = 0 (0x00000000)
+12-15 = 0 (0x00000000)
+144-147 = 0 (0x00000000)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 7
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):5 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):0
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

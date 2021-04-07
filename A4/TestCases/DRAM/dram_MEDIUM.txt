@@ -1,0 +1,211 @@
+addi $t1 $t1 100
+addi $t8 $t8 144
+sw $t1 144 ( $t1 )
+lw $t2  148 ( $t1 )
+lw $t3  144 ( $t1 )
+lw $t4  104 ( $t8 )
+sw $t1 148 ( $t6 )
+lw $t5  344 ( $zero )
+sw $t1 448 ( $t6 )
+lw $t5  544 ( $zero )
+sw $t1 648 ( $t6 )
+lw $t5  744 ( $zero )
+sw $t1 948 ( $t6 )
+lw $t5  224 ( $zero )
+sw $t1 348 ( $t6 )
+lw $t5  444 ( $zero )
+sw $t1 248 ( $t6 )
+lw $t5  144 ( $zero )
+sw $t1 148 ( $t6 )
+lw $t5  144 ( $zero )
+lw $t5  344 ( $zero )
+sw $t1 448 ( $t6 )
+
+________OUTPUT________
+
+Cycle 1:
+Instruction executed: addi $t1 $t1 100
+Register modified: $t1 = 100 (0x00000064)
+
+Cycle 2:
+Instruction executed: addi $t8 $t8 144
+Register modified: $t8 = 144 (0x00000090)
+
+Cycle 3: DRAM request issued for Instruction: sw $t1 144 ( $t1 )
+
+DRAM PROCESSING STARTED: Cycle: 4: Instruction: sw $t1 144 ( $t1 )
+
+Cycle 4: DRAM request issued for Instruction: lw $t2  148 ( $t1 )
+
+Cycle 5: DRAM request issued for Instruction: lw $t3  144 ( $t1 )
+
+Cycle 6: DRAM request issued for Instruction: lw $t4  104 ( $t8 )
+
+Cycle 7: DRAM request issued for Instruction: sw $t1 148 ( $t6 )
+
+Cycle 8: DRAM request issued for Instruction: lw $t5  344 ( $zero )
+
+Cycle 9: DRAM request issued for Instruction: sw $t1 448 ( $t6 )
+
+Cycle 10: DRAM request issued for Instruction: lw $t5  544 ( $zero )
+
+Cycle 11: DRAM request issued for Instruction: sw $t1 648 ( $t6 )
+
+Cycle 12: DRAM request issued for Instruction: lw $t5  744 ( $zero )
+
+Cycle 13: DRAM request issued for Instruction: sw $t1 948 ( $t6 )
+
+Cycle 14: DRAM request issued for Instruction: lw $t5  224 ( $zero )
+
+Cycle 15: DRAM request issued for Instruction: sw $t1 348 ( $t6 )
+
+Cycle 4-15: DRAM request completed for Instruction: sw $t1 144 ( $t1 )
+	  ACTIVATION: Cycle 4-13: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  WRITE:      Cycle 14-15: Data updated in ROW BUFFER: Memory Address (Data section): 244-247 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 16: Instruction: lw $t2  148 ( $t1 )
+
+Cycle 16: DRAM request issued for Instruction: lw $t5  444 ( $zero )
+
+Cycle 17: DRAM request issued for Instruction: sw $t1 248 ( $t6 )
+
+Cycle 16-17: DRAM processing for Instruction: lw $t2  148 ( $t1 ): completed.
+	  READ:  Cycle 16-17: Register value updated: $t2 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 18: Instruction: lw $t3  144 ( $t1 )
+
+Cycle 18: DRAM request issued for Instruction: lw $t5  144 ( $zero )
+
+Cycle 19: DRAM request issued for Instruction: sw $t1 148 ( $t6 )
+
+Cycle 18-19: DRAM processing for Instruction: lw $t3  144 ( $t1 ): completed.
+	  READ:  Cycle 18-19: Register value updated: $t3 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 20: Instruction: lw $t4  104 ( $t8 )
+
+Cycle 20: DRAM request issued for Instruction: lw $t5  144 ( $zero )
+
+Cycle 21: DRAM request issued for Instruction: lw $t5  344 ( $zero )
+
+Cycle 20-21: DRAM processing for Instruction: lw $t4  104 ( $t8 ): completed.
+	  READ:  Cycle 20-21: Register value updated: $t4 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 22: Instruction: sw $t1 148 ( $t6 )
+
+Cycle 22: DRAM request issued for Instruction: sw $t1 448 ( $t6 )
+
+Cycle 22-23: DRAM processing for Instruction: sw $t1 148 ( $t6 ): completed.
+	  WRITE: Cycle 22-23: Data updated in ROW BUFFER: Memory Address (Data section): 148-151 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 24: Instruction: lw $t5  344 ( $zero )
+
+Cycle 24-25: DRAM processing for Instruction: lw $t5  344 ( $zero ): completed.
+	  READ:  Cycle 24-25: Register value updated: $t5 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 26: Instruction: sw $t1 448 ( $t6 )
+
+Cycle 26-27: DRAM processing for Instruction: sw $t1 448 ( $t6 ): completed.
+	  WRITE: Cycle 26-27: Data updated in ROW BUFFER: Memory Address (Data section): 448-451 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 28: Instruction: lw $t5  544 ( $zero )
+
+Cycle 28-29: DRAM processing for Instruction: lw $t5  544 ( $zero ): completed.
+	  READ:  Cycle 28-29: Register value updated: $t5 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 30: Instruction: sw $t1 648 ( $t6 )
+
+Cycle 30-31: DRAM processing for Instruction: sw $t1 648 ( $t6 ): completed.
+	  WRITE: Cycle 30-31: Data updated in ROW BUFFER: Memory Address (Data section): 648-651 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 32: Instruction: lw $t5  744 ( $zero )
+
+Cycle 32-33: DRAM processing for Instruction: lw $t5  744 ( $zero ): completed.
+	  READ:  Cycle 32-33: Register value updated: $t5 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 34: Instruction: sw $t1 948 ( $t6 )
+
+Cycle 34-35: DRAM processing for Instruction: sw $t1 948 ( $t6 ): completed.
+	  WRITE: Cycle 34-35: Data updated in ROW BUFFER: Memory Address (Data section): 948-951 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 36: Instruction: lw $t5  224 ( $zero )
+
+Cycle 36-37: DRAM processing for Instruction: lw $t5  224 ( $zero ): completed.
+	  READ:  Cycle 36-37: Register value updated: $t5 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 38: Instruction: sw $t1 348 ( $t6 )
+
+Cycle 38-39: DRAM processing for Instruction: sw $t1 348 ( $t6 ): completed.
+	  WRITE: Cycle 38-39: Data updated in ROW BUFFER: Memory Address (Data section): 348-351 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 40: Instruction: lw $t5  444 ( $zero )
+
+Cycle 40-41: DRAM processing for Instruction: lw $t5  444 ( $zero ): completed.
+	  READ:  Cycle 40-41: Register value updated: $t5 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 42: Instruction: sw $t1 248 ( $t6 )
+
+Cycle 42-43: DRAM processing for Instruction: sw $t1 248 ( $t6 ): completed.
+	  WRITE: Cycle 42-43: Data updated in ROW BUFFER: Memory Address (Data section): 248-251 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 44: Instruction: lw $t5  144 ( $zero )
+
+Cycle 44-45: DRAM processing for Instruction: lw $t5  144 ( $zero ): completed.
+	  READ:  Cycle 44-45: Register value updated: $t5 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 46: Instruction: sw $t1 148 ( $t6 )
+
+Cycle 46-47: DRAM processing for Instruction: sw $t1 148 ( $t6 ): completed.
+	  WRITE: Cycle 46-47: Data updated in ROW BUFFER: Memory Address (Data section): 148-151 = 100 (0x00000064)
+
+DRAM PROCESSING STARTED: Cycle: 48: Instruction: lw $t5  144 ( $zero )
+
+Cycle 48-49: DRAM processing for Instruction: lw $t5  144 ( $zero ): completed.
+	  READ:  Cycle 48-49: Register value updated: $t5 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 50: Instruction: lw $t5  344 ( $zero )
+
+Cycle 50-51: DRAM processing for Instruction: lw $t5  344 ( $zero ): completed.
+	  READ:  Cycle 50-51: Register value updated: $t5 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 52: Instruction: sw $t1 448 ( $t6 )
+
+Cycle 52-53: DRAM processing for Instruction: sw $t1 448 ( $t6 ): completed.
+	  WRITE: Cycle 52-53: Data updated in ROW BUFFER: Memory Address (Data section): 448-451 = 100 (0x00000064)
+
+PROGRAM EXECUTION ENDED.
+Executing pending writeback:
+Cycle 54: DRAM request issued
+Cycle 55-64: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+______________________________________________________________________________________________________
+
+Total clock cycles: 64
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 2, beq: 0, bne: 0, j: 0
+lw: 11, mul: 0, slt: 0, sub: 0, sw: 9
+
+Memory content at the end of the execution (Data section):
+144-147 = 0 (0x00000000)
+148-151 = 0 (0x00000000)
+224-227 = 0 (0x00000000)
+244-247 = 0 (0x00000000)
+248-251 = 0 (0x00000000)
+344-347 = 0 (0x00000000)
+348-351 = 0 (0x00000000)
+444-447 = 0 (0x00000000)
+448-451 = 0 (0x00000000)
+544-547 = 0 (0x00000000)
+648-651 = 0 (0x00000000)
+744-747 = 0 (0x00000000)
+948-951 = 0 (0x00000000)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 22
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):9 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):11
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

@@ -1,0 +1,8 @@
+sum $t0 $t0 $zero
+
+____________________
+
+Output:
+
+SYNTAX ERROR 2: At line number: 1: sum $t0 $t0 $zero
+Program terminating!

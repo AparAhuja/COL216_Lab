@@ -1,0 +1,5 @@
+cmd line: "/Users/aparahuja/Desktop/Test Cases/test.txt" 10 -2 1
+
+________OUTPUT________
+
+ERROR: negative row/col delay entered. Program terminating!

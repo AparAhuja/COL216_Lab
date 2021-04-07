@@ -1,0 +1,8 @@
+add $v3 $v3 $zero
+
+_____________________
+
+Output:
+
+SYNTAX ERROR 7: At line number: 1: add $v3 $v3 $zero
+Program terminating!

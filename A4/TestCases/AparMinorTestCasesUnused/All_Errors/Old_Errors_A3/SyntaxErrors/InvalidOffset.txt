@@ -1,0 +1,8 @@
+lw $t1 %^($zero)
+
+__________________
+
+Output:
+
+SYNTAX ERROR 13: At line number: 1: lw $t1 %^($zero)
+Program terminating!

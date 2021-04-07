@@ -1,0 +1,135 @@
+main: addi $s0, $zero, 1000
+	addi $s1, $zero, 2500
+	addi $t0, $zero, 1
+	addi $t1, $zero, 2
+	addi $t2, $zero, 3
+	addi $t3, $zero, 4
+
+	sw $t0, 0($s0)
+	sw $t1, 0($s1)
+	
+	sw $t2, 4($s0)	
+	sw $t4, 4($s1)	
+	
+	lw $t5, 0($s0)
+	lw $t6, 0($s1)
+	lw $t7, 4($s0)
+	lw $t8, 4($s1)
+
+
+exit:
+
+
+________OUTPUT________
+
+Cycle 1:
+Instruction executed: addi $s0, $zero, 1000
+Register modified: $s0 = 1000 (0x000003e8)
+
+Cycle 2:
+Instruction executed: addi $s1, $zero, 2500
+Register modified: $s1 = 2500 (0x000009c4)
+
+Cycle 3:
+Instruction executed: addi $t0, $zero, 1
+Register modified: $t0 = 1 (0x00000001)
+
+Cycle 4:
+Instruction executed: addi $t1, $zero, 2
+Register modified: $t1 = 2 (0x00000002)
+
+Cycle 5:
+Instruction executed: addi $t2, $zero, 3
+Register modified: $t2 = 3 (0x00000003)
+
+Cycle 6:
+Instruction executed: addi $t3, $zero, 4
+Register modified: $t3 = 4 (0x00000004)
+
+Cycle 7: DRAM request issued for Instruction: sw $t0, 0($s0)
+
+DRAM PROCESSING STARTED: Cycle: 8: Instruction: sw $t0, 0($s0)
+
+Cycle 8: DRAM request issued for Instruction: sw $t1, 0($s1)
+
+Cycle 9: DRAM request issued for Instruction: sw $t2, 4($s0)
+
+Cycle 10: DRAM request issued for Instruction: sw $t4, 4($s1)
+
+Cycle 11: DRAM request issued for Instruction: lw $t5, 0($s0)
+
+Cycle 12: DRAM request issued for Instruction: lw $t6, 0($s1)
+
+Cycle 13: DRAM request issued for Instruction: lw $t7, 4($s0)
+
+Cycle 14: DRAM request issued for Instruction: lw $t8, 4($s1)
+
+Cycle 8-19: DRAM request completed for Instruction: sw $t0, 0($s0)
+	  ACTIVATION: Cycle 8-17: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  WRITE:      Cycle 18-19: Data updated in ROW BUFFER: Memory Address (Data section): 1000-1003 = 1 (0x00000001)
+
+DRAM PROCESSING STARTED: Cycle: 20: Instruction: sw $t2, 4($s0)
+
+Cycle 20-21: DRAM processing for Instruction: sw $t2, 4($s0): completed.
+	  WRITE: Cycle 20-21: Data updated in ROW BUFFER: Memory Address (Data section): 1004-1007 = 3 (0x00000003)
+
+DRAM PROCESSING STARTED: Cycle: 22: Instruction: lw $t5, 0($s0)
+
+Cycle 22-23: DRAM processing for Instruction: lw $t5, 0($s0): completed.
+	  READ:  Cycle 22-23: Register value updated: $t5 = 1 (0x00000001)
+
+DRAM PROCESSING STARTED: Cycle: 24: Instruction: lw $t7, 4($s0)
+
+Cycle 24-25: DRAM processing for Instruction: lw $t7, 4($s0): completed.
+	  READ:  Cycle 24-25: Register value updated: $t7 = 3 (0x00000003)
+
+DRAM PROCESSING STARTED: Cycle: 26: Instruction: sw $t1, 0($s1)
+
+Cycle 26-47: DRAM request completed for Instruction: sw $t1, 0($s1)
+	  WRITEBACK:  Cycle 26-35: Copying from ROW BUFFER to DRAM (Row (Data section): 2048-3071)
+	  ACTIVATION: Cycle 36-45: Copying from DRAM to ROW BUFFER (Row (Data section): 2048-3071)
+	  WRITE:      Cycle 46-47: Data updated in ROW BUFFER: Memory Address (Data section): 2500-2503 = 2 (0x00000002)
+
+DRAM PROCESSING STARTED: Cycle: 48: Instruction: sw $t4, 4($s1)
+
+Cycle 48-49: DRAM processing for Instruction: sw $t4, 4($s1): completed.
+	  WRITE: Cycle 48-49: Data updated in ROW BUFFER: Memory Address (Data section): 2504-2507 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle: 50: Instruction: lw $t6, 0($s1)
+
+Cycle 50-51: DRAM processing for Instruction: lw $t6, 0($s1): completed.
+	  READ:  Cycle 50-51: Register value updated: $t6 = 2 (0x00000002)
+
+DRAM PROCESSING STARTED: Cycle: 52: Instruction: lw $t8, 4($s1)
+
+Cycle 52-53: DRAM processing for Instruction: lw $t8, 4($s1): completed.
+	  READ:  Cycle 52-53: Register value updated: $t8 = 0 (0x00000000)
+
+PROGRAM EXECUTION ENDED.
+Executing pending writeback:
+Cycle 54: DRAM request issued
+Cycle 55-64: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 2048-3071)
+______________________________________________________________________________________________________
+
+Total clock cycles: 64
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 6, beq: 0, bne: 0, j: 0
+lw: 4, mul: 0, slt: 0, sub: 0, sw: 4
+
+Memory content at the end of the execution (Data section):
+1000-1003 = 0 (0x00000000)
+1004-1007 = 0 (0x00000000)
+2500-2503 = 0 (0x00000000)
+2504-2507 = 0 (0x00000000)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 12
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 2
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 2 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):4 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):4
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!
