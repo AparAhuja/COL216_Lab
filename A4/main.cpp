@@ -225,6 +225,7 @@ struct REGI {
         if (sum > 2147483647 || sum < -2147483648) {
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
             execution_stats();
             return false;
@@ -236,6 +237,7 @@ struct REGI {
                 reg[dest] = 0;
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
 
             return true;
@@ -249,6 +251,7 @@ struct REGI {
         if (diff > 2147483647 || diff < -2147483648) {
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
             execution_stats();
             return false;
@@ -260,6 +263,7 @@ struct REGI {
                 reg[dest] = 0;
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
 
             return true;
@@ -273,6 +277,7 @@ struct REGI {
         if (prod > 2147483647 || prod < -2147483648) {
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
             execution_stats();
             return false;
@@ -284,6 +289,7 @@ struct REGI {
                 reg[dest] = 0;
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
 
             return true;
@@ -298,6 +304,7 @@ struct REGI {
                 stat_update(3);
                 cout << "Cycle " << cycle_cnt << ":\n";
                 cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+                cout << "Memory Address of Instruction: " << temp << "\n";
                 cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
                 //execution_stats();
                 return true;
@@ -306,7 +313,8 @@ struct REGI {
         else PC += 4;
         stat_update(3);
         cout << "Cycle " << cycle_cnt << ":\n";
-        cout << "Instruction executed: " << instructions[temp / 4] << "\n\n";
+        cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+        cout << "Memory Address of Instruction: " << temp << "\n\n";
         return true;
     }
 
@@ -318,6 +326,7 @@ struct REGI {
                 stat_update(4);
                 cout << "Cycle " << cycle_cnt << ":\n";
                 cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+                cout << "Memory Address of Instruction: " << temp << "\n";
                 cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
                 //execution_stats();
                 return true;
@@ -326,7 +335,8 @@ struct REGI {
         else PC += 4;
         stat_update(4);
         cout << "Cycle " << cycle_cnt << ":\n";
-        cout << "Instruction executed: " << instructions[temp / 4] << "\n\n";
+        cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+        cout << "Memory Address of Instruction: " << temp << "\n\n";
         return true;
     }
 
@@ -338,6 +348,7 @@ struct REGI {
         stat_update(5);
         cout << "Cycle " << cycle_cnt << ":\n";
         cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        cout << "Memory Address of Instruction: " << PC << "\n";
         cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
     }
 
@@ -348,13 +359,15 @@ struct REGI {
         if (PC > PARTITION) {
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+            cout << "Memory Address of Instruction: " << temp << "\n";
             cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
             //execution_stats();
             return true;
         }
         else {
             cout << "Cycle " << cycle_cnt << ":\n";
-            cout << "Instruction executed: " << instructions[temp / 4] << "\n\n";
+            cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+            cout << "Memory Address of Instruction: " << temp << "\n\n";
             return true;
         }
     }
@@ -404,20 +417,22 @@ struct REGI {
         cout << "Cycle " << cycle_cnt << ": ";
         if(r1 == 0 && ins_num == 7) {
             cout << "\nInstruction executed: " << instructions[PC / 4] << "\n";
+            //->cout<<PC
             cout << "No DRAM request issued; $zero register!\n";
             cout << "Register modified: " << num_reg[r1] << " = " << reg[r1] << " (0x" << decimalToHexadecimal(reg[r1]) << ")\n\n";
             PC += 4;
             return true;
         }
-        cout << "DRAM request issued for Instruction: " << instructions[PC / 4] << "\n\n";
-        
-        // add request to Queue
+        cout << "DRAM request issued for Instruction: " << instructions[PC / 4] << "\n";
+        cout << "Memory Address of Instruction: " << PC << "\n\n";
+        //-> cout<<PC
+        // add request to Queuexr
         if(ins_num == 7) {
-            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, 0, r1, "lw", instructions[PC/4]};
+            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, 0, r1, "lw", instructions[PC/4],PC};
             q.addRequest(req);
         }    
         else {  
-            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, reg[r1], 0, "sw", instructions[PC/4]};
+            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, reg[r1], 0, "sw", instructions[PC/4],PC};
             q.addRequest(req);
         }
         // increment PC by 4
@@ -445,7 +460,9 @@ struct REGI {
             memoryAddress.push_back(addr);
         }    
        
-        cout << "DRAM PROCESSING STARTED: Cycle " << cycle_start + 1 << ": Instruction: " << req.instruction << "\n\n";
+        cout << "DRAM PROCESSING STARTED: Cycle " << cycle_start + 1 << ": Instruction: " << req.instruction << "\n";
+        //-> cout<<PC
+       cout << "Memory Address of Instruction: " << req.PC << "\n\n";
         // check if the current buffer row is different from current row or not
         if (start == row_start) {
             if(type == "lw") {value_read++;}
@@ -467,6 +484,8 @@ struct REGI {
             }
             cycle_end = cycle_start + COL_ACCESS_DELAY;
             cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM processing for Instruction: " << req.instruction << ": completed.\n";
+            //->cout<<PC
+            cout << "\t  Memory Address of Instruction: " << req.PC << "\n";
             if(type == "lw") {
                 reg[src] = (src==0) ? 0 : ROW_BUFFER[addr + DATA_START - row_start];
                 cout << "\t  READ:  Cycle " << cycle_start + 1 << "-" << cycle_end << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr + DATA_START - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr + DATA_START - row_start]) << ")\n\n";
@@ -547,6 +566,8 @@ struct REGI {
             cycle_start = cycle_start + (1 - isEmpty) * ROW_ACCESS_DELAY;
             cycle_end = cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY;
             cout<<"Cycle "<<cycle_start - (1 - isEmpty) * ROW_ACCESS_DELAY + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
+            //->Cout<<PC
+            cout << "\t  Memory Address of Instruction: " << req.PC << "\n";
             if(!isEmpty) {cout << "\t  WRITEBACK:  Cycle " << cycle_start - ROW_ACCESS_DELAY + 1 << "-" << cycle_start << ":" << " Copying from ROW BUFFER to DRAM (Row (Data section): " << temp_start - DATA_START << "-" << temp_end - DATA_START << ")\n";}
             cout << "\t  ACTIVATION: Cycle " << cycle_start + 1 << "-" << cycle_start + ROW_ACCESS_DELAY << ":" << " Copying from DRAM to ROW BUFFER (Row (Data section): " << row_start - DATA_START << "-" << row_end - DATA_START << ")\n";
             if(type == "lw") {
@@ -573,6 +594,7 @@ struct REGI {
         if (sum > 2147483647 || sum < -2147483648) {
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
             execution_stats();
             return false;
@@ -584,6 +606,7 @@ struct REGI {
                 reg[dest] = 0;
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
             return true;
         }
@@ -872,7 +895,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
     // read all initial white spaces
     while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
     // return if there are only white spaces with true (no error)
-    if (i == len)
+    if (i == len||instruction.at(i)=='#')
         return make_pair(args, true);
 
     // else
@@ -1372,7 +1395,10 @@ int main(int argc, char** argv) {
         }
         // store the command line arguments
         // file name
+        
         file_path = argv[1];
+        
+        
         if (!isInteger(argv[2]) || !isInteger(argv[3])) {
             // ROW_ACCESS_DELAY or COL_ACCESS_DELAY is not an integer
             cout << "ERROR: DRAM delay is not an integer. Program terminating!\n";
@@ -1408,6 +1434,11 @@ int main(int argc, char** argv) {
         cout << "Program terminating!\n";
         return 0;
     }
+
+    //file_path = "/Users/aparahuja/Desktop/GitHub/COL216_Lab/A4/TestCases/Arnav/DifferentDelays/TestCase4.txt";
+    //ROW_ACCESS_DELAY = 2;
+    //COL_ACCESS_DELAY = 10;
+    //ROW_ACCESS_DELAY = 10; COL_ACCESS_DELAY = 2;
 
     ifstream infile(file_path);
 
