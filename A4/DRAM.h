@@ -14,6 +14,7 @@ struct Request {
     int destination;
     string type;
     string instruction;
+    int PC;
 };
 
 struct Queue {
