@@ -298,9 +298,9 @@ struct REGI {
                 stat_update(3);
                 cout << "Cycle " << cycle_cnt << ":\n";
                 cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-                cout << "Warning: Program jumped to a non-instruction memory location. Program terminated abruptly!\n\n";
-                execution_stats();
-                return false;
+                cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
+                //execution_stats();
+                return true;
             }
         }
         else PC += 4;
@@ -318,9 +318,9 @@ struct REGI {
                 stat_update(4);
                 cout << "Cycle " << cycle_cnt << ":\n";
                 cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-                cout << "Warning: Program jumped to a non-instruction memory location. Program terminated abruptly!\n\n";
-                execution_stats();
-                return false;
+                cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
+                //execution_stats();
+                return true;
             }
         }
         else PC += 4;
@@ -348,9 +348,9 @@ struct REGI {
         if (PC > PARTITION) {
             cout << "Cycle " << cycle_cnt << ":\n";
             cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-            cout << "Warning: Program jumped to a non-instruction memory location. Program terminated abruptly!\n\n";
-            execution_stats();
-            return false;
+            cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
+            //execution_stats();
+            return true;
         }
         else {
             cout << "Cycle " << cycle_cnt << ":\n";
@@ -461,12 +461,12 @@ struct REGI {
             cycle_end = cycle_start + COL_ACCESS_DELAY;
             cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM processing for Instruction: " << req.instruction << ": completed.\n";
             if(type == "lw") {
-                reg[req.destination] = (req.destination==0)?0:ROW_BUFFER[addr - row_start];
-                cout << "\t  READ:  Cycle " << cycle_start + 1 << "-" << cycle_start + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr - row_start]) << ")\n\n";
+                reg[src] = (src==0) ? 0 : ROW_BUFFER[addr + DATA_START - row_start];
+                cout << "\t  READ:  Cycle " << cycle_start + 1 << "-" << cycle_end << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr + DATA_START - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr + DATA_START - row_start]) << ")\n\n";
             }
             if(type == "sw") {
-                ROW_BUFFER[addr - row_start] = req.data_bus;
-                cout << "\t  WRITE: Cycle " << cycle_start + 1 << "-" << cycle_start + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
+                ROW_BUFFER[addr + DATA_START - row_start] = data;
+                cout << "\t  WRITE: Cycle " << cycle_start + 1 << "-" << cycle_end << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
             }
         }
        
@@ -499,6 +499,8 @@ struct REGI {
             if(type == "lw") {value_read++; doWriteback = false;}
             if(type == "sw") {value_write++; doWriteback = true;}
             
+            int temp_start = start, temp_end = end;
+
             // update start and end values
             start = row_start;
             end = row_end;
@@ -519,8 +521,8 @@ struct REGI {
                 if (!flag) return flag;
                 count++;
             }
-            // update register value
             count = 0;
+            // update register value
             while (count < COL_ACCESS_DELAY) {
                 if(MODE)
                     flag = executeIndependent(q);
@@ -538,14 +540,14 @@ struct REGI {
             cycle_start = cycle_start + (1 - isEmpty) * ROW_ACCESS_DELAY;
             cycle_end = cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY;
             cout<<"Cycle "<<cycle_start - (1 - isEmpty) * ROW_ACCESS_DELAY + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
-            if(!isEmpty) {cout << "\t  WRITEBACK:  Cycle " << cycle_start - ROW_ACCESS_DELAY + 1 << "-" << cycle_start << ":" << " Copying from ROW BUFFER to DRAM (Row (Data section): " << start - DATA_START << "-" << end - DATA_START << ")\n";}
+            if(!isEmpty) {cout << "\t  WRITEBACK:  Cycle " << cycle_start - ROW_ACCESS_DELAY + 1 << "-" << cycle_start << ":" << " Copying from ROW BUFFER to DRAM (Row (Data section): " << temp_start - DATA_START << "-" << temp_end - DATA_START << ")\n";}
             cout << "\t  ACTIVATION: Cycle " << cycle_start + 1 << "-" << cycle_start + ROW_ACCESS_DELAY << ":" << " Copying from DRAM to ROW BUFFER (Row (Data section): " << row_start - DATA_START << "-" << row_end - DATA_START << ")\n";
             if(type == "lw") {
-                reg[req.destination] = (req.destination==0)?0:ROW_BUFFER[addr - row_start];
-                cout << "\t  READ:       Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr - row_start]) << ")\n\n";
+                reg[src] = (src == 0) ? 0 : ROW_BUFFER[addr + DATA_START - row_start];
+                cout << "\t  READ:       Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr + DATA_START - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr + DATA_START - row_start]) << ")\n\n";
             }
             if(type == "sw") {
-                ROW_BUFFER[addr - row_start] = req.data_bus;
+                ROW_BUFFER[addr + DATA_START - row_start] = data;
                 cout << "\t  WRITE:      Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
             }
             isEmpty = false;
@@ -604,7 +606,7 @@ struct REGI {
         bool flag;
 
         // check if PC is less than partition
-        if (PC < PARTITION) {
+        if (PC < PARTITION && PC >= 0) {
             ins_code = DRAM[PC];
             int val1 = DRAM[PC + 1], val2 = DRAM[PC + 2], val3 = DRAM[PC + 3];
 
@@ -697,13 +699,13 @@ struct REGI {
 
     // modified function
     void buffer() {
-        cout << "PROGRAM EXECUTION ENDED.";
+        cout << "PROGRAM EXECUTION ENDED.\n";
         if (!isEmpty && doWriteback) {
             writebacks++;
             for (int i = 0; i < 1024; i++) {
                 DRAM[start + i] = ROW_BUFFER[i];
             }
-            cout << "\nExecuting pending writeback:\n";
+            cout << "Executing pending writeback:\n";
             cout << "Cycle " << cycle_cnt + 1 << ": DRAM request issued\n";
             cout << "Cycle " << cycle_cnt + 2 << "-" << cycle_cnt + ROW_ACCESS_DELAY + 1 << ":" << " WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : " << start - DATA_START << "-" << end - DATA_START << ")\n";
             cycle_cnt = cycle_cnt + ROW_ACCESS_DELAY + 1;
@@ -720,7 +722,7 @@ bool simulator(REGI& rf, Queue &q) {
     bool flag;
 
     // while program counter is less than PARTITION
-    while (PC < PARTITION) {
+    while (PC < PARTITION && PC >= 0) {
         
         // get instruction code
         ins_code = DRAM[PC];
