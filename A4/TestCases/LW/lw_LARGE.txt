@@ -33,254 +33,348 @@ sw $t1 144 ( $s2 )
 lw $t1  800 ( $t5 )
 lw $t3  024 ( $t4 )
 
-________OUTPUT________
+OUTPUT -
 
 Cycle 1:
 Instruction executed: addi $t1 $t1 997
+Memory Address of Instruction: 0
 Register modified: $t1 = 997 (0x000003e5)
 
 Cycle 2:
 Instruction executed: addi $t2 $t1 2
+Memory Address of Instruction: 4
 Register modified: $t2 = 999 (0x000003e7)
 
 Cycle 3:
 Instruction executed: addi $s2 $t1 15
+Memory Address of Instruction: 8
 Register modified: $s2 = 1012 (0x000003f4)
 
 Cycle 4: DRAM request issued for Instruction: sw $t1 141 ( $t2 )
+Memory Address of Instruction: 12
 
-DRAM PROCESSING STARTED: Cycle: 5: Instruction: sw $t1 141 ( $t2 )
+DRAM PROCESSING STARTED: Cycle 5: Instruction: sw $t1 141 ( $t2 )
+Memory Address of Instruction: 12
 
 Cycle 5: DRAM request issued for Instruction: lw $t1  0 ( $t5 )
+Memory Address of Instruction: 16
 
 Cycle 6: DRAM request issued for Instruction: lw $t3  48 ( $t4 )
+Memory Address of Instruction: 20
 
 Cycle 5-16: DRAM request completed for Instruction: sw $t1 141 ( $t2 )
+	  Memory Address of Instruction: 12
 	  ACTIVATION: Cycle 5-14: Copying from DRAM to ROW BUFFER (Row (Data section): 1024-2047)
 	  WRITE:      Cycle 15-16: Data updated in ROW BUFFER: Memory Address (Data section): 1140-1143 = 997 (0x000003e5)
 
-DRAM PROCESSING STARTED: Cycle: 17: Instruction: lw $t1  0 ( $t5 )
+DRAM PROCESSING STARTED: Cycle 17: Instruction: lw $t1  0 ( $t5 )
+Memory Address of Instruction: 16
 
 Cycle 17-38: DRAM request completed for Instruction: lw $t1  0 ( $t5 )
-	  WRITEBACK:  Cycle 17-26: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+	  Memory Address of Instruction: 16
+	  WRITEBACK:  Cycle 17-26: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
 	  ACTIVATION: Cycle 27-36: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
 	  READ:       Cycle 37-38: Register value updated: $t1 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 39: Instruction: lw $t3  48 ( $t4 )
+DRAM PROCESSING STARTED: Cycle 39: Instruction: lw $t3  48 ( $t4 )
+Memory Address of Instruction: 20
 
 Cycle 39-40: DRAM processing for Instruction: lw $t3  48 ( $t4 ): completed.
+	  Memory Address of Instruction: 20
 	  READ:  Cycle 39-40: Register value updated: $t3 = 0 (0x00000000)
 
 Cycle 41: DRAM request issued for Instruction: lw $t3  84 ( $t3 )
+Memory Address of Instruction: 24
 
-DRAM PROCESSING STARTED: Cycle: 42: Instruction: lw $t3  84 ( $t3 )
+DRAM PROCESSING STARTED: Cycle 42: Instruction: lw $t3  84 ( $t3 )
+Memory Address of Instruction: 24
 
 Cycle 42: DRAM request issued for Instruction: lw $t5  141 ( $t2 )
+Memory Address of Instruction: 28
 
 Cycle 43: DRAM request issued for Instruction: sw $zero 145 ( $t2 )
+Memory Address of Instruction: 32
 
 Cycle 42-43: DRAM processing for Instruction: lw $t3  84 ( $t3 ): completed.
+	  Memory Address of Instruction: 24
 	  READ:  Cycle 42-43: Register value updated: $t3 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 44: Instruction: lw $t5  141 ( $t2 )
+DRAM PROCESSING STARTED: Cycle 44: Instruction: lw $t5  141 ( $t2 )
+Memory Address of Instruction: 28
 
 Cycle 44: DRAM request issued for Instruction: lw $t5  144 ( $s2 )
+Memory Address of Instruction: 36
 
 Cycle 45: DRAM request issued for Instruction: sw $t1 153 ( $t2 )
+Memory Address of Instruction: 40
 
 Cycle 44-65: DRAM request completed for Instruction: lw $t5  141 ( $t2 )
-	  WRITEBACK:  Cycle 44-53: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
+	  Memory Address of Instruction: 28
+	  WRITEBACK:  Cycle 44-53: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
 	  ACTIVATION: Cycle 54-63: Copying from DRAM to ROW BUFFER (Row (Data section): 1024-2047)
 	  READ:       Cycle 64-65: Register value updated: $t5 = 997 (0x000003e5)
 
-DRAM PROCESSING STARTED: Cycle: 66: Instruction: sw $zero 145 ( $t2 )
+DRAM PROCESSING STARTED: Cycle 66: Instruction: sw $zero 145 ( $t2 )
+Memory Address of Instruction: 32
 
 Cycle 66-67: DRAM processing for Instruction: sw $zero 145 ( $t2 ): completed.
+	  Memory Address of Instruction: 32
 	  WRITE: Cycle 66-67: Data updated in ROW BUFFER: Memory Address (Data section): 1144-1147 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 68: Instruction: lw $t5  144 ( $s2 )
+DRAM PROCESSING STARTED: Cycle 68: Instruction: lw $t5  144 ( $s2 )
+Memory Address of Instruction: 36
 
 Cycle 68-69: DRAM processing for Instruction: lw $t5  144 ( $s2 ): completed.
+	  Memory Address of Instruction: 36
 	  READ:  Cycle 68-69: Register value updated: $t5 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 70: Instruction: sw $t1 153 ( $t2 )
+DRAM PROCESSING STARTED: Cycle 70: Instruction: sw $t1 153 ( $t2 )
+Memory Address of Instruction: 40
 
 Cycle 70: DRAM request issued for Instruction: lw $t1  04 ( $t5 )
+Memory Address of Instruction: 44
 
 Cycle 71: DRAM request issued for Instruction: lw $t3  44 ( $t4 )
+Memory Address of Instruction: 48
 
 Cycle 70-71: DRAM processing for Instruction: sw $t1 153 ( $t2 ): completed.
+	  Memory Address of Instruction: 40
 	  WRITE: Cycle 70-71: Data updated in ROW BUFFER: Memory Address (Data section): 1152-1155 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 72: Instruction: lw $t1  04 ( $t5 )
+DRAM PROCESSING STARTED: Cycle 72: Instruction: lw $t1  04 ( $t5 )
+Memory Address of Instruction: 44
 
 Cycle 72-93: DRAM request completed for Instruction: lw $t1  04 ( $t5 )
-	  WRITEBACK:  Cycle 72-81: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+	  Memory Address of Instruction: 44
+	  WRITEBACK:  Cycle 72-81: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
 	  ACTIVATION: Cycle 82-91: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
 	  READ:       Cycle 92-93: Register value updated: $t1 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 94: Instruction: lw $t3  44 ( $t4 )
+DRAM PROCESSING STARTED: Cycle 94: Instruction: lw $t3  44 ( $t4 )
+Memory Address of Instruction: 48
 
 Cycle 94: DRAM request issued for Instruction: sw $t1 145 ( $t2 )
+Memory Address of Instruction: 52
 
 Cycle 95: DRAM request issued for Instruction: lw $t1  0 ( $t5 )
+Memory Address of Instruction: 56
 
 Cycle 94-95: DRAM processing for Instruction: lw $t3  44 ( $t4 ): completed.
+	  Memory Address of Instruction: 48
 	  READ:  Cycle 94-95: Register value updated: $t3 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 96: Instruction: sw $t1 145 ( $t2 )
+DRAM PROCESSING STARTED: Cycle 96: Instruction: sw $t1 145 ( $t2 )
+Memory Address of Instruction: 52
 
 Cycle 96: DRAM request issued for Instruction: lw $t3  48 ( $t4 )
+Memory Address of Instruction: 60
 
 Cycle 96-117: DRAM request completed for Instruction: sw $t1 145 ( $t2 )
-	  WRITEBACK:  Cycle 96-105: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
+	  Memory Address of Instruction: 52
+	  WRITEBACK:  Cycle 96-105: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
 	  ACTIVATION: Cycle 106-115: Copying from DRAM to ROW BUFFER (Row (Data section): 1024-2047)
 	  WRITE:      Cycle 116-117: Data updated in ROW BUFFER: Memory Address (Data section): 1144-1147 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 118: Instruction: lw $t1  0 ( $t5 )
+DRAM PROCESSING STARTED: Cycle 118: Instruction: lw $t1  0 ( $t5 )
+Memory Address of Instruction: 56
 
 Cycle 118-139: DRAM request completed for Instruction: lw $t1  0 ( $t5 )
-	  WRITEBACK:  Cycle 118-127: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+	  Memory Address of Instruction: 56
+	  WRITEBACK:  Cycle 118-127: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
 	  ACTIVATION: Cycle 128-137: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
 	  READ:       Cycle 138-139: Register value updated: $t1 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 140: Instruction: lw $t3  48 ( $t4 )
+DRAM PROCESSING STARTED: Cycle 140: Instruction: lw $t3  48 ( $t4 )
+Memory Address of Instruction: 60
 
 Cycle 140-141: DRAM processing for Instruction: lw $t3  48 ( $t4 ): completed.
+	  Memory Address of Instruction: 60
 	  READ:  Cycle 140-141: Register value updated: $t3 = 0 (0x00000000)
 
 Cycle 142: DRAM request issued for Instruction: lw $t3  88 ( $t3 )
+Memory Address of Instruction: 64
 
-DRAM PROCESSING STARTED: Cycle: 143: Instruction: lw $t3  88 ( $t3 )
+DRAM PROCESSING STARTED: Cycle 143: Instruction: lw $t3  88 ( $t3 )
+Memory Address of Instruction: 64
 
 Cycle 143: DRAM request issued for Instruction: lw $t5  144 ( $zero )
+Memory Address of Instruction: 68
 
 Cycle 144: DRAM request issued for Instruction: sw $zero 144 ( $zero )
+Memory Address of Instruction: 72
 
 Cycle 143-144: DRAM processing for Instruction: lw $t3  88 ( $t3 ): completed.
+	  Memory Address of Instruction: 64
 	  READ:  Cycle 143-144: Register value updated: $t3 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 145: Instruction: lw $t5  144 ( $zero )
+DRAM PROCESSING STARTED: Cycle 145: Instruction: lw $t5  144 ( $zero )
+Memory Address of Instruction: 68
 
 Cycle 145: DRAM request issued for Instruction: lw $t5  1444 ( $zero )
+Memory Address of Instruction: 76
 
 Cycle 146: DRAM request issued for Instruction: sw $t1 144 ( $s2 )
+Memory Address of Instruction: 80
 
 Cycle 145-146: DRAM processing for Instruction: lw $t5  144 ( $zero ): completed.
+	  Memory Address of Instruction: 68
 	  READ:  Cycle 145-146: Register value updated: $t5 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 147: Instruction: sw $zero 144 ( $zero )
+DRAM PROCESSING STARTED: Cycle 147: Instruction: sw $zero 144 ( $zero )
+Memory Address of Instruction: 72
 
 Cycle 147-148: DRAM processing for Instruction: sw $zero 144 ( $zero ): completed.
+	  Memory Address of Instruction: 72
 	  WRITE: Cycle 147-148: Data updated in ROW BUFFER: Memory Address (Data section): 144-147 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 149: Instruction: lw $t5  1444 ( $zero )
+DRAM PROCESSING STARTED: Cycle 149: Instruction: lw $t5  1444 ( $zero )
+Memory Address of Instruction: 76
 
 Cycle 149-170: DRAM request completed for Instruction: lw $t5  1444 ( $zero )
-	  WRITEBACK:  Cycle 149-158: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
+	  Memory Address of Instruction: 76
+	  WRITEBACK:  Cycle 149-158: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
 	  ACTIVATION: Cycle 159-168: Copying from DRAM to ROW BUFFER (Row (Data section): 1024-2047)
 	  READ:       Cycle 169-170: Register value updated: $t5 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 171: Instruction: sw $t1 144 ( $s2 )
+DRAM PROCESSING STARTED: Cycle 171: Instruction: sw $t1 144 ( $s2 )
+Memory Address of Instruction: 80
 
 Cycle 171: DRAM request issued for Instruction: lw $t1  8 ( $t5 )
+Memory Address of Instruction: 84
 
 Cycle 172: DRAM request issued for Instruction: lw $t3  4 ( $s2 )
+Memory Address of Instruction: 88
 
 Cycle 171-172: DRAM processing for Instruction: sw $t1 144 ( $s2 ): completed.
+	  Memory Address of Instruction: 80
 	  WRITE: Cycle 171-172: Data updated in ROW BUFFER: Memory Address (Data section): 1156-1159 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 173: Instruction: lw $t1  8 ( $t5 )
+DRAM PROCESSING STARTED: Cycle 173: Instruction: lw $t1  8 ( $t5 )
+Memory Address of Instruction: 84
 
 Cycle 173-194: DRAM request completed for Instruction: lw $t1  8 ( $t5 )
-	  WRITEBACK:  Cycle 173-182: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+	  Memory Address of Instruction: 84
+	  WRITEBACK:  Cycle 173-182: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
 	  ACTIVATION: Cycle 183-192: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
 	  READ:       Cycle 193-194: Register value updated: $t1 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 195: Instruction: lw $t3  4 ( $s2 )
+DRAM PROCESSING STARTED: Cycle 195: Instruction: lw $t3  4 ( $s2 )
+Memory Address of Instruction: 88
 
 Cycle 195: DRAM request issued for Instruction: sw $t1 145 ( $t2 )
+Memory Address of Instruction: 92
 
 Cycle 196: DRAM request issued for Instruction: lw $t1  0 ( $t5 )
+Memory Address of Instruction: 96
 
 Cycle 195-196: DRAM processing for Instruction: lw $t3  4 ( $s2 ): completed.
+	  Memory Address of Instruction: 88
 	  READ:  Cycle 195-196: Register value updated: $t3 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 197: Instruction: sw $t1 145 ( $t2 )
+DRAM PROCESSING STARTED: Cycle 197: Instruction: sw $t1 145 ( $t2 )
+Memory Address of Instruction: 92
 
 Cycle 197: DRAM request issued for Instruction: lw $t3  40 ( $t4 )
+Memory Address of Instruction: 100
 
 Cycle 197-218: DRAM request completed for Instruction: sw $t1 145 ( $t2 )
-	  WRITEBACK:  Cycle 197-206: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
+	  Memory Address of Instruction: 92
+	  WRITEBACK:  Cycle 197-206: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
 	  ACTIVATION: Cycle 207-216: Copying from DRAM to ROW BUFFER (Row (Data section): 1024-2047)
 	  WRITE:      Cycle 217-218: Data updated in ROW BUFFER: Memory Address (Data section): 1144-1147 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 219: Instruction: lw $t1  0 ( $t5 )
+DRAM PROCESSING STARTED: Cycle 219: Instruction: lw $t1  0 ( $t5 )
+Memory Address of Instruction: 96
 
 Cycle 219-240: DRAM request completed for Instruction: lw $t1  0 ( $t5 )
-	  WRITEBACK:  Cycle 219-228: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+	  Memory Address of Instruction: 96
+	  WRITEBACK:  Cycle 219-228: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
 	  ACTIVATION: Cycle 229-238: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
 	  READ:       Cycle 239-240: Register value updated: $t1 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 241: Instruction: lw $t3  40 ( $t4 )
+DRAM PROCESSING STARTED: Cycle 241: Instruction: lw $t3  40 ( $t4 )
+Memory Address of Instruction: 100
 
 Cycle 241-242: DRAM processing for Instruction: lw $t3  40 ( $t4 ): completed.
+	  Memory Address of Instruction: 100
 	  READ:  Cycle 241-242: Register value updated: $t3 = 0 (0x00000000)
 
 Cycle 243: DRAM request issued for Instruction: lw $t3  80 ( $t3 )
+Memory Address of Instruction: 104
 
-DRAM PROCESSING STARTED: Cycle: 244: Instruction: lw $t3  80 ( $t3 )
+DRAM PROCESSING STARTED: Cycle 244: Instruction: lw $t3  80 ( $t3 )
+Memory Address of Instruction: 104
 
 Cycle 244: DRAM request issued for Instruction: lw $t5  144 ( $s2 )
+Memory Address of Instruction: 108
 
 Cycle 245: DRAM request issued for Instruction: sw $zero 141 ( $t2 )
+Memory Address of Instruction: 112
 
 Cycle 244-245: DRAM processing for Instruction: lw $t3  80 ( $t3 ): completed.
+	  Memory Address of Instruction: 104
 	  READ:  Cycle 244-245: Register value updated: $t3 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 246: Instruction: lw $t5  144 ( $s2 )
+DRAM PROCESSING STARTED: Cycle 246: Instruction: lw $t5  144 ( $s2 )
+Memory Address of Instruction: 108
 
 Cycle 246: DRAM request issued for Instruction: lw $t5  144 ( $zero )
+Memory Address of Instruction: 116
 
 Cycle 247: DRAM request issued for Instruction: sw $t1 144 ( $s2 )
+Memory Address of Instruction: 120
 
 Cycle 246-267: DRAM request completed for Instruction: lw $t5  144 ( $s2 )
-	  WRITEBACK:  Cycle 246-255: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
+	  Memory Address of Instruction: 108
+	  WRITEBACK:  Cycle 246-255: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
 	  ACTIVATION: Cycle 256-265: Copying from DRAM to ROW BUFFER (Row (Data section): 1024-2047)
 	  READ:       Cycle 266-267: Register value updated: $t5 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 268: Instruction: sw $t1 144 ( $s2 )
+DRAM PROCESSING STARTED: Cycle 268: Instruction: sw $t1 144 ( $s2 )
+Memory Address of Instruction: 120
 
 Cycle 268-269: DRAM processing for Instruction: sw $t1 144 ( $s2 ): completed.
+	  Memory Address of Instruction: 120
 	  WRITE: Cycle 268-269: Data updated in ROW BUFFER: Memory Address (Data section): 1156-1159 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 270: Instruction: sw $zero 141 ( $t2 )
+DRAM PROCESSING STARTED: Cycle 270: Instruction: sw $zero 141 ( $t2 )
+Memory Address of Instruction: 112
 
 Cycle 270-271: DRAM processing for Instruction: sw $zero 141 ( $t2 ): completed.
+	  Memory Address of Instruction: 112
 	  WRITE: Cycle 270-271: Data updated in ROW BUFFER: Memory Address (Data section): 1140-1143 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 272: Instruction: lw $t5  144 ( $zero )
+DRAM PROCESSING STARTED: Cycle 272: Instruction: lw $t5  144 ( $zero )
+Memory Address of Instruction: 116
 
 Cycle 272-293: DRAM request completed for Instruction: lw $t5  144 ( $zero )
-	  WRITEBACK:  Cycle 272-281: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+	  Memory Address of Instruction: 116
+	  WRITEBACK:  Cycle 272-281: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
 	  ACTIVATION: Cycle 282-291: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
 	  READ:       Cycle 292-293: Register value updated: $t5 = 0 (0x00000000)
 
 Cycle 294: DRAM request issued for Instruction: lw $t1  800 ( $t5 )
+Memory Address of Instruction: 124
 
-DRAM PROCESSING STARTED: Cycle: 295: Instruction: lw $t1  800 ( $t5 )
+DRAM PROCESSING STARTED: Cycle 295: Instruction: lw $t1  800 ( $t5 )
+Memory Address of Instruction: 124
 
 Cycle 295: DRAM request issued for Instruction: lw $t3  024 ( $t4 )
+Memory Address of Instruction: 128
 
 Cycle 295-296: DRAM processing for Instruction: lw $t1  800 ( $t5 ): completed.
+	  Memory Address of Instruction: 124
 	  READ:  Cycle 295-296: Register value updated: $t1 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 297: Instruction: lw $t3  024 ( $t4 )
+DRAM PROCESSING STARTED: Cycle 297: Instruction: lw $t3  024 ( $t4 )
+Memory Address of Instruction: 128
 
 Cycle 297-298: DRAM processing for Instruction: lw $t3  024 ( $t4 ): completed.
+	  Memory Address of Instruction: 128
 	  READ:  Cycle 297-298: Register value updated: $t3 = 0 (0x00000000)
 
-PROGRAM EXECUTION ENDED.______________________________________________________________________________________________________
+PROGRAM EXECUTION ENDED.
+______________________________________________________________________________________________________
 
 Total clock cycles: 298
 

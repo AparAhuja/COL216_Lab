@@ -1,0 +1,299 @@
+#ROW_ACCESS_DELAY = 10, COL_ACCESS_DELAY = 2
+
+addi $t1, $t1, 5
+aDdi $t0 , $zero, 1
+add $v1 $zero $t0
+sw $v1 4($zero)
+loop: SLT $v0 $t1, $t0
+      bne $v0, $zero exit
+	  lw $v1 4($zero)
+	  MUL $v1 $v1 $t0
+	  sw $v1 4($zero)
+	  addi $t0, $t0, 1
+	  j loop
+
+exit:
+	  add $a0 $zero $v1
+	  
+OUTPUT -
+
+Cycle 1:
+Instruction executed: addi $t1, $t1, 5
+Memory Address of Instruction: 0
+Register modified: $t1 = 5 (0x00000005)
+
+Cycle 2:
+Instruction executed: aDdi $t0 , $zero, 1
+Memory Address of Instruction: 4
+Register modified: $t0 = 1 (0x00000001)
+
+Cycle 3:
+Instruction executed: add $v1 $zero $t0
+Memory Address of Instruction: 8
+Register modified: $v1 = 1 (0x00000001)
+
+Cycle 4: DRAM request issued for Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 12
+
+DRAM PROCESSING STARTED: Cycle 5: Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 12
+
+Cycle 5:
+Instruction executed: SLT $v0 $t1, $t0
+Memory Address of Instruction: 16
+Register modified: $v0 = 0 (0x00000000)
+
+Cycle 6:
+Instruction executed: bne $v0, $zero exit
+Memory Address of Instruction: 20
+
+Cycle 7: DRAM request issued for Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+Cycle 5-16: DRAM request completed for Instruction: sw $v1 4($zero)
+	  Memory Address of Instruction: 12
+	  ACTIVATION: Cycle 5-14: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  WRITE:      Cycle 15-16: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 1 (0x00000001)
+
+DRAM PROCESSING STARTED: Cycle 17: Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+Cycle 17-18: DRAM processing for Instruction: lw $v1 4($zero): completed.
+	  Memory Address of Instruction: 24
+	  READ:  Cycle 17-18: Register value updated: $v1 = 1 (0x00000001)
+
+Cycle 19:
+Instruction executed: MUL $v1 $v1 $t0
+Memory Address of Instruction: 28
+Register modified: $v1 = 1 (0x00000001)
+
+Cycle 20: DRAM request issued for Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+DRAM PROCESSING STARTED: Cycle 21: Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+Cycle 21:
+Instruction executed: addi $t0, $t0, 1
+Memory Address of Instruction: 36
+Register modified: $t0 = 2 (0x00000002)
+
+Cycle 22:
+Instruction executed: j loop
+Memory Address of Instruction: 40
+
+Cycle 21-22: DRAM processing for Instruction: sw $v1 4($zero): completed.
+	  Memory Address of Instruction: 32
+	  WRITE: Cycle 21-22: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 1 (0x00000001)
+
+Cycle 23:
+Instruction executed: SLT $v0 $t1, $t0
+Memory Address of Instruction: 16
+Register modified: $v0 = 0 (0x00000000)
+
+Cycle 24:
+Instruction executed: bne $v0, $zero exit
+Memory Address of Instruction: 20
+
+Cycle 25: DRAM request issued for Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+DRAM PROCESSING STARTED: Cycle 26: Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+Cycle 26-27: DRAM processing for Instruction: lw $v1 4($zero): completed.
+	  Memory Address of Instruction: 24
+	  READ:  Cycle 26-27: Register value updated: $v1 = 1 (0x00000001)
+
+Cycle 28:
+Instruction executed: MUL $v1 $v1 $t0
+Memory Address of Instruction: 28
+Register modified: $v1 = 2 (0x00000002)
+
+Cycle 29: DRAM request issued for Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+DRAM PROCESSING STARTED: Cycle 30: Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+Cycle 30:
+Instruction executed: addi $t0, $t0, 1
+Memory Address of Instruction: 36
+Register modified: $t0 = 3 (0x00000003)
+
+Cycle 31:
+Instruction executed: j loop
+Memory Address of Instruction: 40
+
+Cycle 30-31: DRAM processing for Instruction: sw $v1 4($zero): completed.
+	  Memory Address of Instruction: 32
+	  WRITE: Cycle 30-31: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 2 (0x00000002)
+
+Cycle 32:
+Instruction executed: SLT $v0 $t1, $t0
+Memory Address of Instruction: 16
+Register modified: $v0 = 0 (0x00000000)
+
+Cycle 33:
+Instruction executed: bne $v0, $zero exit
+Memory Address of Instruction: 20
+
+Cycle 34: DRAM request issued for Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+DRAM PROCESSING STARTED: Cycle 35: Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+Cycle 35-36: DRAM processing for Instruction: lw $v1 4($zero): completed.
+	  Memory Address of Instruction: 24
+	  READ:  Cycle 35-36: Register value updated: $v1 = 2 (0x00000002)
+
+Cycle 37:
+Instruction executed: MUL $v1 $v1 $t0
+Memory Address of Instruction: 28
+Register modified: $v1 = 6 (0x00000006)
+
+Cycle 38: DRAM request issued for Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+DRAM PROCESSING STARTED: Cycle 39: Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+Cycle 39:
+Instruction executed: addi $t0, $t0, 1
+Memory Address of Instruction: 36
+Register modified: $t0 = 4 (0x00000004)
+
+Cycle 40:
+Instruction executed: j loop
+Memory Address of Instruction: 40
+
+Cycle 39-40: DRAM processing for Instruction: sw $v1 4($zero): completed.
+	  Memory Address of Instruction: 32
+	  WRITE: Cycle 39-40: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 6 (0x00000006)
+
+Cycle 41:
+Instruction executed: SLT $v0 $t1, $t0
+Memory Address of Instruction: 16
+Register modified: $v0 = 0 (0x00000000)
+
+Cycle 42:
+Instruction executed: bne $v0, $zero exit
+Memory Address of Instruction: 20
+
+Cycle 43: DRAM request issued for Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+DRAM PROCESSING STARTED: Cycle 44: Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+Cycle 44-45: DRAM processing for Instruction: lw $v1 4($zero): completed.
+	  Memory Address of Instruction: 24
+	  READ:  Cycle 44-45: Register value updated: $v1 = 6 (0x00000006)
+
+Cycle 46:
+Instruction executed: MUL $v1 $v1 $t0
+Memory Address of Instruction: 28
+Register modified: $v1 = 24 (0x00000018)
+
+Cycle 47: DRAM request issued for Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+DRAM PROCESSING STARTED: Cycle 48: Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+Cycle 48:
+Instruction executed: addi $t0, $t0, 1
+Memory Address of Instruction: 36
+Register modified: $t0 = 5 (0x00000005)
+
+Cycle 49:
+Instruction executed: j loop
+Memory Address of Instruction: 40
+
+Cycle 48-49: DRAM processing for Instruction: sw $v1 4($zero): completed.
+	  Memory Address of Instruction: 32
+	  WRITE: Cycle 48-49: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 24 (0x00000018)
+
+Cycle 50:
+Instruction executed: SLT $v0 $t1, $t0
+Memory Address of Instruction: 16
+Register modified: $v0 = 0 (0x00000000)
+
+Cycle 51:
+Instruction executed: bne $v0, $zero exit
+Memory Address of Instruction: 20
+
+Cycle 52: DRAM request issued for Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+DRAM PROCESSING STARTED: Cycle 53: Instruction: lw $v1 4($zero)
+Memory Address of Instruction: 24
+
+Cycle 53-54: DRAM processing for Instruction: lw $v1 4($zero): completed.
+	  Memory Address of Instruction: 24
+	  READ:  Cycle 53-54: Register value updated: $v1 = 24 (0x00000018)
+
+Cycle 55:
+Instruction executed: MUL $v1 $v1 $t0
+Memory Address of Instruction: 28
+Register modified: $v1 = 120 (0x00000078)
+
+Cycle 56: DRAM request issued for Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+DRAM PROCESSING STARTED: Cycle 57: Instruction: sw $v1 4($zero)
+Memory Address of Instruction: 32
+
+Cycle 57:
+Instruction executed: addi $t0, $t0, 1
+Memory Address of Instruction: 36
+Register modified: $t0 = 6 (0x00000006)
+
+Cycle 58:
+Instruction executed: j loop
+Memory Address of Instruction: 40
+
+Cycle 57-58: DRAM processing for Instruction: sw $v1 4($zero): completed.
+	  Memory Address of Instruction: 32
+	  WRITE: Cycle 57-58: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 120 (0x00000078)
+
+Cycle 59:
+Instruction executed: SLT $v0 $t1, $t0
+Memory Address of Instruction: 16
+Register modified: $v0 = 1 (0x00000001)
+
+Cycle 60:
+Instruction executed: bne $v0, $zero exit
+Memory Address of Instruction: 20
+
+Cycle 61:
+Instruction executed: add $a0 $zero $v1
+Memory Address of Instruction: 44
+Register modified: $a0 = 120 (0x00000078)
+
+PROGRAM EXECUTION ENDED.
+Executing pending writeback:
+Cycle 62: DRAM request issued
+Cycle 63-72: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+______________________________________________________________________________________________________
+
+Total clock cycles: 72
+
+Number of instructions executed for each type are given below:-
+add: 2, addi: 7, beq: 0, bne: 6, j: 5
+lw: 5, mul: 5, slt: 6, sub: 0, sw: 6
+
+Memory content at the end of the execution (Data section):
+4-7 = 120 (0x00000078)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 13
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):6 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):5
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

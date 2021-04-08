@@ -5,43 +5,57 @@ lw $t2  148 ( $t1 )
 lw $t3  144 ( $t1 )
 lw $t4  100 ( $t8 )
 
-________OUTPUT________
+OUTPUT -
 
 Cycle 1:
 Instruction executed: addi $t1 $t1 100
+Memory Address of Instruction: 0
 Register modified: $t1 = 100 (0x00000064)
 
 Cycle 2:
 Instruction executed: addi $t8 $t8 144
+Memory Address of Instruction: 4
 Register modified: $t8 = 144 (0x00000090)
 
 Cycle 3: DRAM request issued for Instruction: sw $t1 144 ( $t1 )
+Memory Address of Instruction: 8
 
-DRAM PROCESSING STARTED: Cycle: 4: Instruction: sw $t1 144 ( $t1 )
+DRAM PROCESSING STARTED: Cycle 4: Instruction: sw $t1 144 ( $t1 )
+Memory Address of Instruction: 8
 
 Cycle 4: DRAM request issued for Instruction: lw $t2  148 ( $t1 )
+Memory Address of Instruction: 12
 
 Cycle 5: DRAM request issued for Instruction: lw $t3  144 ( $t1 )
+Memory Address of Instruction: 16
 
 Cycle 6: DRAM request issued for Instruction: lw $t4  100 ( $t8 )
+Memory Address of Instruction: 20
 
 Cycle 4-15: DRAM request completed for Instruction: sw $t1 144 ( $t1 )
+	  Memory Address of Instruction: 8
 	  ACTIVATION: Cycle 4-13: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
 	  WRITE:      Cycle 14-15: Data updated in ROW BUFFER: Memory Address (Data section): 244-247 = 100 (0x00000064)
 
-DRAM PROCESSING STARTED: Cycle: 16: Instruction: lw $t2  148 ( $t1 )
+DRAM PROCESSING STARTED: Cycle 16: Instruction: lw $t2  148 ( $t1 )
+Memory Address of Instruction: 12
 
 Cycle 16-17: DRAM processing for Instruction: lw $t2  148 ( $t1 ): completed.
+	  Memory Address of Instruction: 12
 	  READ:  Cycle 16-17: Register value updated: $t2 = 0 (0x00000000)
 
-DRAM PROCESSING STARTED: Cycle: 18: Instruction: lw $t3  144 ( $t1 )
+DRAM PROCESSING STARTED: Cycle 18: Instruction: lw $t3  144 ( $t1 )
+Memory Address of Instruction: 16
 
 Cycle 18-19: DRAM processing for Instruction: lw $t3  144 ( $t1 ): completed.
+	  Memory Address of Instruction: 16
 	  READ:  Cycle 18-19: Register value updated: $t3 = 100 (0x00000064)
 
-DRAM PROCESSING STARTED: Cycle: 20: Instruction: lw $t4  100 ( $t8 )
+DRAM PROCESSING STARTED: Cycle 20: Instruction: lw $t4  100 ( $t8 )
+Memory Address of Instruction: 20
 
 Cycle 20-21: DRAM processing for Instruction: lw $t4  100 ( $t8 ): completed.
+	  Memory Address of Instruction: 20
 	  READ:  Cycle 20-21: Register value updated: $t4 = 100 (0x00000064)
 
 PROGRAM EXECUTION ENDED.
@@ -57,7 +71,7 @@ add: 0, addi: 2, beq: 0, bne: 0, j: 0
 lw: 3, mul: 0, slt: 0, sub: 0, sw: 1
 
 Memory content at the end of the execution (Data section):
-244-247 = 0 (0x00000000)
+244-247 = 100 (0x00000064)
 248-251 = 0 (0x00000000)
 
 Total ROW BUFFER operations (writeback/activation/read/write): 6

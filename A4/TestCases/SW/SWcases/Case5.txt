@@ -1,0 +1,62 @@
+lw $t1 1000($zero)
+lw $t1 1024($zero)
+sw $t3 1000($zero)
+
+OUTPUT -
+
+Cycle 1: DRAM request issued for Instruction: lw $t1 1000($zero)
+Memory Address of Instruction: 0
+
+DRAM PROCESSING STARTED: Cycle 2: Instruction: lw $t1 1000($zero)
+Memory Address of Instruction: 0
+
+Cycle 2: DRAM request issued for Instruction: lw $t1 1024($zero)
+Memory Address of Instruction: 4
+
+Cycle 3: DRAM request issued for Instruction: sw $t3 1000($zero)
+Memory Address of Instruction: 8
+
+Cycle 2-13: DRAM request completed for Instruction: lw $t1 1000($zero)
+	  Memory Address of Instruction: 0
+	  ACTIVATION: Cycle 2-11: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  READ:       Cycle 12-13: Register value updated: $t1 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle 14: Instruction: sw $t3 1000($zero)
+Memory Address of Instruction: 8
+
+Cycle 14-15: DRAM processing for Instruction: sw $t3 1000($zero): completed.
+	  Memory Address of Instruction: 8
+	  WRITE: Cycle 14-15: Data updated in ROW BUFFER: Memory Address (Data section): 1000-1003 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle 16: Instruction: lw $t1 1024($zero)
+Memory Address of Instruction: 4
+
+Cycle 16-37: DRAM request completed for Instruction: lw $t1 1024($zero)
+	  Memory Address of Instruction: 4
+	  WRITEBACK:  Cycle 16-25: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+	  ACTIVATION: Cycle 26-35: Copying from DRAM to ROW BUFFER (Row (Data section): 1024-2047)
+	  READ:       Cycle 36-37: Register value updated: $t1 = 0 (0x00000000)
+
+PROGRAM EXECUTION ENDED.
+______________________________________________________________________________________________________
+
+Total clock cycles: 37
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 0, beq: 0, bne: 0, j: 0
+lw: 2, mul: 0, slt: 0, sub: 0, sw: 1
+
+Memory content at the end of the execution (Data section):
+1000-1003 = 0 (0x00000000)
+1024-1027 = 0 (0x00000000)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 6
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 2 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):1 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):2
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!
