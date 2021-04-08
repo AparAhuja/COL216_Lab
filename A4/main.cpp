@@ -13,7 +13,7 @@ int PC = 0;
 // instruction end address
 int PARTITION = 0;
 
-// starting address of data section (old value - 699052)
+// starting address of data section (old value = 699052)
 int DATA_START = 699392;
 
 // ROW_ACCESS_DELAY and COL_ACCESS_DELAY
@@ -359,6 +359,7 @@ struct REGI {
         }
     }
 
+    // modified function
     bool lw(int r1, int offset, int r2, Queue &q) {
         bool flag;
 
@@ -368,6 +369,7 @@ struct REGI {
         return flag;
     }
 
+    // modified function
     bool sw(int r1, int offset, int r2, Queue &q) {
         bool flag;
 
@@ -377,6 +379,7 @@ struct REGI {
         return flag;
     }
 
+    // new function added
     bool raiseRequest(int r1, int offset, int r2, Queue &q, int ins_num) {
         // check if address is valid
         long long addr = (long long)offset + (long long)reg[r2] + (long long)DATA_START;
@@ -415,6 +418,7 @@ struct REGI {
         return true;     
     }
 
+    // modified function
    bool NonBlockLW(Queue &q) {
         // boolean flag used to detect any errors
         bool flag = true;
@@ -581,6 +585,7 @@ struct REGI {
         ins_cnt[ins_code]++;
     }
 
+    // new function added
     bool inPwrite(Queue &q, int val1, int val2 = -1, int val3 = -1) {
         string s1 = num_reg[val1], s2 = num_reg[val2], s3 = num_reg[val3];
         return (q.Pwrite.find(s1) != q.Pwrite.end() || q.Pwrite.find(s2) != q.Pwrite.end() || q.Pwrite.find(s3) != q.Pwrite.end());
@@ -593,6 +598,7 @@ struct REGI {
         }
     }
 
+    // modified function
     bool executeIndependent(Queue &q) {
         int ins_code;
         bool flag;
@@ -689,6 +695,7 @@ struct REGI {
         return true;
     }
 
+    // modified function
     void buffer() {
         cout << "PROGRAM EXECUTION ENDED.";
         if (!isEmpty && doWriteback) {
@@ -706,6 +713,7 @@ struct REGI {
 
 
 // this function simulates the execution of MIPS program
+// modified function
 bool simulator(REGI& rf, Queue &q) {
 
     int ins_code;
@@ -1033,7 +1041,7 @@ pair<vector<string>, bool> parseInstruction(string instruction) {
     }
 }
 
-
+// new function added
 string removeSpaces(string line){
     int i = 0, j = line.length() - 1;
     while(i<line.length() && (line.at(i) == ' ' || line.at(i) == '\t')){
@@ -1046,6 +1054,8 @@ string removeSpaces(string line){
 }
 
 // function used to a line of MIPS code to memory, if it is an instruction
+// modified function
+// removed redundant white spaces / tabs
 bool addToMemory(string line, REGI& rf, int line_number) {
     // args will be used to store the instruction arguments
     vector<string> args;
@@ -1340,6 +1350,8 @@ bool linker(REGI& rf) {
     return true;
 }
 
+// modified function
+// added Queue data structure
 int main(int argc, char** argv) {
     
     string file_path;
