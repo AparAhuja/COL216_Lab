@@ -1,0 +1,56 @@
+ j 2
+ addi $t1 $t1 1
+ addi $t2 $t2 1
+ beq $t2 $t1 lab
+ slt $t1 $t1 $t2
+ j 10
+ addi $t2 $t2 1
+ bne $t2 $t7 10
+ addi $t3 $t3 1
+lab:
+ j 4
+
+
+OUTPUT -
+
+Cycle 1:
+Instruction executed: j 2
+Memory Address of Instruction: 0
+
+Cycle 2:
+Instruction executed: addi $t2 $t2 1
+Memory Address of Instruction: 8
+Register modified: $t2 = 1 (0x00000001)
+
+Cycle 3:
+Instruction executed: beq $t2 $t1 lab
+Memory Address of Instruction: 12
+
+Cycle 4:
+Instruction executed: slt $t1 $t1 $t2
+Memory Address of Instruction: 16
+Register modified: $t1 = 1 (0x00000001)
+
+Cycle 5:
+Instruction executed: j 10
+Memory Address of Instruction: 20
+
+PROGRAM EXECUTION ENDED.
+______________________________________________________________________________________________________
+
+Total clock cycles: 5
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 1, beq: 1, bne: 0, j: 2
+lw: 0, mul: 0, slt: 1, sub: 0, sw: 0
+
+Total ROW BUFFER operations (writeback/activation/read/write): 0
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 0
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 0 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):0 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):0
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!
