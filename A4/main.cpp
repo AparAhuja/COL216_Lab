@@ -1435,10 +1435,10 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    //file_path = "/Users/aparahuja/Desktop/GitHub/COL216_Lab/A4/TestCases/Arnav/DifferentDelays/TestCase4.txt";
-    //ROW_ACCESS_DELAY = 2;
-    //COL_ACCESS_DELAY = 10;
-    //ROW_ACCESS_DELAY = 10; COL_ACCESS_DELAY = 2;
+    //file_path = "/Users/aparahuja/Desktop/GitHub/COL216_Lab/A4/TestCases/Relational/Relational_LARGE.txt";
+//    ROW_ACCESS_DELAY = 4;
+//    COL_ACCESS_DELAY = 6;
+                      //ROW_ACCESS_DELAY = 10; COL_ACCESS_DELAY = 2;
 
     ifstream infile(file_path);
 
