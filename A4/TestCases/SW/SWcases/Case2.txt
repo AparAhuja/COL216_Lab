@@ -1,6 +1,7 @@
-row_delay = 2
-col_delay = 1
-________________
+#row_delay = 2
+#col_delay = 1
+#________________
+
 sw $t0 1028($zero)
 lw $t1 4($zero)
 lw $t2 8($zero)

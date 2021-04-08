@@ -1,21 +1,28 @@
-ROW_ACCESS_DELAY = 10, COL_ACCESS_DELAY = 2
+#ROW_ACCESS_DELAY = 10, COL_ACCESS_DELAY = 2
 
 addi $t1 $t1 123
 sw $t1 16($zero)
 
-______________________________________________________________________________________________________
-
-Output:
+OUTPUT -
 
 Cycle 1:
 Instruction executed: addi $t1 $t1 123
+Memory Address of Instruction: 0
 Register modified: $t1 = 123 (0x0000007b)
 
-Cycle 2: Instruction executed: sw $t1 16($zero) (DRAM request issued)
-Cycle 3-12: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
-Cycle 13-14: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 16-19 = 123 (0x0000007b)
+Cycle 2: DRAM request issued for Instruction: sw $t1 16($zero)
+Memory Address of Instruction: 4
 
-Final writeback:
+DRAM PROCESSING STARTED: Cycle 3: Instruction: sw $t1 16($zero)
+Memory Address of Instruction: 4
+
+Cycle 3-14: DRAM request completed for Instruction: sw $t1 16($zero)
+	  Memory Address of Instruction: 4
+	  ACTIVATION: Cycle 3-12: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  WRITE:      Cycle 13-14: Data updated in ROW BUFFER: Memory Address (Data section): 16-19 = 123 (0x0000007b)
+
+PROGRAM EXECUTION ENDED.
+Executing pending writeback:
 Cycle 15: DRAM request issued
 Cycle 16-25: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
 ______________________________________________________________________________________________________

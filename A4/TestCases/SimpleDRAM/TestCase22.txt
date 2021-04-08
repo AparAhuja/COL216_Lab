@@ -1,20 +1,27 @@
-ROW_ACCESS_DELAY = 4, COL_ACCESS_DELAY = 6
+#ROW_ACCESS_DELAY = 4, COL_ACCESS_DELAY = 6
 
 addi $t0, $t0, 5
 lw $t0, 124($zero)
 
-___________________________________________________
-
-Output:
+OUTPUT -
 
 Cycle 1:
 Instruction executed: addi $t0, $t0, 5
+Memory Address of Instruction: 0
 Register modified: $t0 = 5 (0x00000005)
 
-Cycle 2: Instruction executed: lw $t0, 124($zero) (DRAM request issued)
-Cycle 3-6: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
-Cycle 7-12: READ: Register value updated: $t0 = 0 (0x00000000)
+Cycle 2: DRAM request issued for Instruction: lw $t0, 124($zero)
+Memory Address of Instruction: 4
 
+DRAM PROCESSING STARTED: Cycle 3: Instruction: lw $t0, 124($zero)
+Memory Address of Instruction: 4
+
+Cycle 3-12: DRAM request completed for Instruction: lw $t0, 124($zero)
+	  Memory Address of Instruction: 4
+	  ACTIVATION: Cycle 3-6: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  READ:       Cycle 7-12: Register value updated: $t0 = 0 (0x00000000)
+
+PROGRAM EXECUTION ENDED.
 ______________________________________________________________________________________________________
 
 Total clock cycles: 12

@@ -1,4 +1,4 @@
-ROW_ACCESS_DELAY = 10, COL_ACCESS_DELAY = 2
+#ROW_ACCESS_DELAY = 10, COL_ACCESS_DELAY = 2
 
 addi $t0 $t0 5
 lw $t0 508($zero)
@@ -6,30 +6,46 @@ addi $t1 $t0 508
 add $t0 $zero $t1
 sw $t0 0($t1)
 
-______________________________________________________________________________________________________
-
-Output:
+OUTPUT -
 
 Cycle 1:
 Instruction executed: addi $t0 $t0 5
+Memory Address of Instruction: 0
 Register modified: $t0 = 5 (0x00000005)
 
-Cycle 2: Instruction executed: lw $t0 508($zero) (DRAM request issued)
-Cycle 3-12: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
-Cycle 13-14: READ: Register value updated: $t0 = 0 (0x00000000)
+Cycle 2: DRAM request issued for Instruction: lw $t0 508($zero)
+Memory Address of Instruction: 4
+
+DRAM PROCESSING STARTED: Cycle 3: Instruction: lw $t0 508($zero)
+Memory Address of Instruction: 4
+
+Cycle 3-14: DRAM request completed for Instruction: lw $t0 508($zero)
+	  Memory Address of Instruction: 4
+	  ACTIVATION: Cycle 3-12: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  READ:       Cycle 13-14: Register value updated: $t0 = 0 (0x00000000)
 
 Cycle 15:
 Instruction executed: addi $t1 $t0 508
+Memory Address of Instruction: 8
 Register modified: $t1 = 508 (0x000001fc)
 
 Cycle 16:
 Instruction executed: add $t0 $zero $t1
+Memory Address of Instruction: 12
 Register modified: $t0 = 508 (0x000001fc)
 
-Cycle 17: Instruction executed: sw $t0 0($t1) (DRAM request issued)
-Cycle 18-19: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 508-511 = 508 (0x000001fc)
+Cycle 17: DRAM request issued for Instruction: sw $t0 0($t1)
+Memory Address of Instruction: 16
 
-Final writeback:
+DRAM PROCESSING STARTED: Cycle 18: Instruction: sw $t0 0($t1)
+Memory Address of Instruction: 16
+
+Cycle 18-19: DRAM processing for Instruction: sw $t0 0($t1): completed.
+	  Memory Address of Instruction: 16
+	  WRITE: Cycle 18-19: Data updated in ROW BUFFER: Memory Address (Data section): 508-511 = 508 (0x000001fc)
+
+PROGRAM EXECUTION ENDED.
+Executing pending writeback:
 Cycle 20: DRAM request issued
 Cycle 21-30: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
 ______________________________________________________________________________________________________
