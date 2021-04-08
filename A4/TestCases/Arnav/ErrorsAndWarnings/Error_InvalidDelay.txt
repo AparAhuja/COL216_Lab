@@ -1,0 +1,1 @@
+ERROR: DRAM delay is not an integer. Program terminating!

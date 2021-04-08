@@ -1,0 +1,59 @@
+ROW_ACCESS_DELAY = 6, COL_ACCESS_DELAY = 2
+
+addi $t0, $t0,56
+SW $t0, 32($zero)
+sw $t0 -52($t0)
+LW $s3 4($zero)
+lw $t4, -24($t0)
+mul $t5,$t4 $s3
+
+_______________________________________________
+
+Output:
+
+Cycle 1:
+Instruction executed: addi $t0, $t0,56
+Register modified: $t0 = 56 (0x00000038)
+
+Cycle 2: Instruction executed: SW $t0, 32($zero) (DRAM request issued)
+Cycle 3-8: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+Cycle 9-10: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 32-35 = 56 (0x00000038)
+
+Cycle 11: Instruction executed: sw $t0 -52($t0) (DRAM request issued)
+Cycle 12-13: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 56 (0x00000038)
+
+Cycle 14: Instruction executed: LW $s3 4($zero) (DRAM request issued)
+Cycle 15-16: READ: Register value updated: $s3 = 56 (0x00000038)
+
+Cycle 17: Instruction executed: lw $t4, -24($t0) (DRAM request issued)
+Cycle 18-19: READ: Register value updated: $t4 = 56 (0x00000038)
+
+Cycle 20:
+Instruction executed: mul $t5,$t4 $s3
+Register modified: $t5 = 3136 (0x00000c40)
+
+Final writeback:
+Cycle 21: DRAM request issued
+Cycle 22-27: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+______________________________________________________________________________________________________
+
+Total clock cycles: 27
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 1, beq: 0, bne: 0, j: 0
+lw: 2, mul: 1, slt: 0, sub: 0, sw: 2
+
+Memory content at the end of the execution (Data section):
+4-7 = 56 (0x00000038)
+32-35 = 56 (0x00000038)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 6
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):2 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):2
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

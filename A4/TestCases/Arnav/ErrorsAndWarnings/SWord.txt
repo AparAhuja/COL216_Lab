@@ -1,0 +1,25 @@
+ROW_ACCESS_DELAY = 6, COL_ACCESS_DELAY = 4
+
+sw $t1, 3($zero)
+
+______________________________________________________________________________________________________
+
+Output:
+
+Error: Memory address is not word-aligned. Invalid store operation. Program Terminating!
+
+______________________________________________________________________________________________________
+
+Total clock cycles: 0
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 0, beq: 0, bne: 0, j: 0
+lw: 0, mul: 0, slt: 0, sub: 0, sw: 0
+
+Total ROW BUFFER operations (writeback/activation/read/write): 0
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 0
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 0 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):0 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):0
+
+______________________________________________________________________________________________________

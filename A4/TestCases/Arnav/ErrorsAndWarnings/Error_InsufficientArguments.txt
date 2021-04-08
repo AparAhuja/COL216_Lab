@@ -1,0 +1,3 @@
+ERROR: Insufficient number of arguments were provided! Three arguments are expected from the user.
+Refer to README.md for more details..
+Program terminating!

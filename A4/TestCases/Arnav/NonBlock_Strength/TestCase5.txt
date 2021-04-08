@@ -1,0 +1,43 @@
+ROW_ACCESS_DELAY = 4, COL_ACCESS_DELAY = 2
+
+lw $t0, 0($s1)
+addi $t1 $t1 1
+addi $t0, $t0, 5
+
+____________________________
+
+Output:
+
+Cycle 1: Instruction executed: lw $t0 0($s1) (DRAM request issued)
+Cycle 2-5: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+Cycle 6-7: READ: Register value updated: $t0 = 0 (0x00000000)
+
+Cycle 2:
+Instruction executed: addi $t1 $t1 1
+Register modified: $t1 = 1 (0x00000001)
+
+Cycle 8:
+Instruction executed: addi $t0 $t0 5
+Register modified: $t0 = 5 (0x00000005)
+
+______________________________________________________________________________________________________
+
+Total clock cycles: 8
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 2, beq: 0, bne: 0, j: 0
+lw: 1, mul: 0, slt: 0, sub: 0, sw: 0
+
+Memory content at the end of the execution (Data section):
+0-3 = 0 (0x00000000)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 2
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 0
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):0 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):1
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

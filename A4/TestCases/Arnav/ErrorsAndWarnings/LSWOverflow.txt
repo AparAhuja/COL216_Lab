@@ -1,0 +1,10 @@
+ROW_ACCESS_DELAY = 6, COL_ACCESS_DELAY = 4
+
+lw $t0 32768($zero)
+
+_____________________
+
+Output:
+
+Immediate Overflow ERROR: At line number: 1:
+Program terminating!

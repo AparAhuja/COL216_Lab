@@ -1,0 +1,1 @@
+ERROR: Operating mode is not an integer. Either enter 0 or 1. Program terminating!

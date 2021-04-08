@@ -1,0 +1,62 @@
+ROW_ACCESS_DELAY = 6, COL_ACCESS_DELAY = 2
+
+addi $t0, $t0,56
+SW $t0, 32($zero)
+sw $t0 2048($t0)
+lw $t4, -24($t0)
+LW $s3 2104($zero)
+mul $t5,$t4 $s3
+
+______________________________________________________________________________________________________
+
+Output:
+
+Cycle 1:
+Instruction executed: addi $t0, $t0,56
+Register modified: $t0 = 56 (0x00000038)
+
+Cycle 2: Instruction executed: SW $t0, 32($zero) (DRAM request issued)
+Cycle 3-8: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+Cycle 9-10: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 32-35 = 56 (0x00000038)
+
+Cycle 11: Instruction executed: sw $t0 2048($t0) (DRAM request issued)
+Cycle 12-17: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+Cycle 18-23: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 2048-3071)
+Cycle 24-25: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 2104-2107 = 56 (0x00000038)
+
+Cycle 26: Instruction executed: lw $t4, -24($t0) (DRAM request issued)
+Cycle 27-32: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section): 2048-3071)
+Cycle 33-38: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+Cycle 39-40: READ: Register value updated: $t4 = 56 (0x00000038)
+
+Cycle 41: Instruction executed: LW $s3 2104($zero) (DRAM request issued)
+Cycle 42-47: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+Cycle 48-53: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 2048-3071)
+Cycle 54-55: READ: Register value updated: $s3 = 56 (0x00000038)
+
+Cycle 56:
+Instruction executed: mul $t5,$t4 $s3
+Register modified: $t5 = 3136 (0x00000c40)
+
+______________________________________________________________________________________________________
+
+Total clock cycles: 56
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 1, beq: 0, bne: 0, j: 0
+lw: 2, mul: 1, slt: 0, sub: 0, sw: 2
+
+Memory content at the end of the execution (Data section):
+32-35 = 56 (0x00000038)
+2104-2107 = 56 (0x00000038)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 11
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 3
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 4 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):2 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):2
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

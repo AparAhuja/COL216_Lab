@@ -1,0 +1,359 @@
+ROW_ACCESS_DELAY = 6, COL_ACCESS_DELAY = 4
+
+addi $t0 $zero 5
+addi $s0, $zero, 1
+LOOP1:
+		slt $v0, $t1 $t0
+		bne $v0 $s0, 5
+		addi $t3, $zero, 4
+		mul $t4 $t1, $t3
+		sw $t1, 0($t4)
+		add $t1, $t1 $s0
+		j LOOP1
+add $t1 $zero $zero
+LOOP2:
+		slt $v1, $t1, $t0
+		beq $v1, $zero exit
+		addi $t5 $zero, 4
+		mul $t4 $t1, $t5
+		lw $s5	 0($t4)
+		add $t2 $t2 $s5 
+		addi $t1 $t1 1
+		j LOOP2
+exit:
+				add $a0, $zero, $t2
+
+____________________________________________________________
+
+Output:
+
+
+Cycle 1:
+Instruction executed: addi $t0 $zero 5
+Register modified: $t0 = 5 (0x00000005)
+
+Cycle 2:
+Instruction executed: addi $s0, $zero, 1
+Register modified: $s0 = 1 (0x00000001)
+
+Cycle 3:
+Instruction executed:           slt $v0, $t1 $t0
+Register modified: $v0 = 1 (0x00000001)
+
+Cycle 4:
+Instruction executed:           bne $v0 $s0, 5
+
+Cycle 5:
+Instruction executed:           addi $t3, $zero, 4
+Register modified: $t3 = 4 (0x00000004)
+
+Cycle 6:
+Instruction executed:           mul $t4 $t1, $t3
+Register modified: $t4 = 0 (0x00000000)
+
+Cycle 7: Instruction executed:          sw $t1, 0($t4) (DRAM request issued)
+Cycle 8-13: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+Cycle 14-17: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 0-3 = 0 (0x00000000)
+
+Cycle 8:
+Instruction executed:           add $t1, $t1 $s0
+Register modified: $t1 = 1 (0x00000001)
+
+Cycle 9:
+Instruction executed:           j LOOP1
+
+Cycle 10:
+Instruction executed:           slt $v0, $t1 $t0
+Register modified: $v0 = 1 (0x00000001)
+
+Cycle 11:
+Instruction executed:           bne $v0 $s0, 5
+
+Cycle 12:
+Instruction executed:           addi $t3, $zero, 4
+Register modified: $t3 = 4 (0x00000004)
+
+Cycle 13:
+Instruction executed:           mul $t4 $t1, $t3
+Register modified: $t4 = 4 (0x00000004)
+
+Cycle 18: Instruction executed:                 sw $t1, 0($t4) (DRAM request issued)
+Cycle 19-22: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 4-7 = 1 (0x00000001)
+
+Cycle 19:
+Instruction executed:           add $t1, $t1 $s0
+Register modified: $t1 = 2 (0x00000002)
+
+Cycle 20:
+Instruction executed:           j LOOP1
+
+Cycle 21:
+Instruction executed:           slt $v0, $t1 $t0
+Register modified: $v0 = 1 (0x00000001)
+
+Cycle 22:
+Instruction executed:           bne $v0 $s0, 5
+
+Cycle 23:
+Instruction executed:           addi $t3, $zero, 4
+Register modified: $t3 = 4 (0x00000004)
+
+Cycle 24:
+Instruction executed:           mul $t4 $t1, $t3
+Register modified: $t4 = 8 (0x00000008)
+
+Cycle 25: Instruction executed:                 sw $t1, 0($t4) (DRAM request issued)
+Cycle 26-29: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 8-11 = 2 (0x00000002)
+
+Cycle 26:
+Instruction executed:           add $t1, $t1 $s0
+Register modified: $t1 = 3 (0x00000003)
+
+Cycle 27:
+Instruction executed:           j LOOP1
+
+Cycle 28:
+Instruction executed:           slt $v0, $t1 $t0
+Register modified: $v0 = 1 (0x00000001)
+
+Cycle 29:
+Instruction executed:           bne $v0 $s0, 5
+
+Cycle 30:
+Instruction executed:           addi $t3, $zero, 4
+Register modified: $t3 = 4 (0x00000004)
+
+Cycle 31:
+Instruction executed:           mul $t4 $t1, $t3
+Register modified: $t4 = 12 (0x0000000c)
+
+Cycle 32: Instruction executed:                 sw $t1, 0($t4) (DRAM request issued)
+Cycle 33-36: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 12-15 = 3 (0x00000003)
+
+Cycle 33:
+Instruction executed:           add $t1, $t1 $s0
+Register modified: $t1 = 4 (0x00000004)
+
+Cycle 34:
+Instruction executed:           j LOOP1
+
+Cycle 35:
+Instruction executed:           slt $v0, $t1 $t0
+Register modified: $v0 = 1 (0x00000001)
+
+Cycle 36:
+Instruction executed:           bne $v0 $s0, 5
+
+Cycle 37:
+Instruction executed:           addi $t3, $zero, 4
+Register modified: $t3 = 4 (0x00000004)
+
+Cycle 38:
+Instruction executed:           mul $t4 $t1, $t3
+Register modified: $t4 = 16 (0x00000010)
+
+Cycle 39: Instruction executed:                 sw $t1, 0($t4) (DRAM request issued)
+Cycle 40-43: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 16-19 = 4 (0x00000004)
+
+Cycle 40:
+Instruction executed:           add $t1, $t1 $s0
+Register modified: $t1 = 5 (0x00000005)
+
+Cycle 41:
+Instruction executed:           j LOOP1
+
+Cycle 42:
+Instruction executed:           slt $v0, $t1 $t0
+Register modified: $v0 = 0 (0x00000000)
+
+Cycle 43:
+Instruction executed:           bne $v0 $s0, 5
+
+Cycle 44:
+Instruction executed: add $t1 $zero $zero
+Register modified: $t1 = 0 (0x00000000)
+
+Cycle 45:
+Instruction executed:           slt $v1, $t1, $t0
+Register modified: $v1 = 1 (0x00000001)
+
+Cycle 46:
+Instruction executed:           beq $v1, $zero exit
+
+Cycle 47:
+Instruction executed:           addi $t5 $zero, 4
+Register modified: $t5 = 4 (0x00000004)
+
+Cycle 48:
+Instruction executed:           mul $t4 $t1, $t5
+Register modified: $t4 = 0 (0x00000000)
+
+Cycle 49: Instruction executed:                 lw $s5   0($t4) (DRAM request issued)
+Cycle 50-53: READ: Register value updated: $s5 = 0 (0x00000000)
+
+Cycle 54:
+Instruction executed:           add $t2 $t2 $s5
+Register modified: $t2 = 0 (0x00000000)
+
+Cycle 55:
+Instruction executed:           addi $t1 $t1 1
+Register modified: $t1 = 1 (0x00000001)
+
+Cycle 56:
+Instruction executed:           j LOOP2
+
+Cycle 57:
+Instruction executed:           slt $v1, $t1, $t0
+Register modified: $v1 = 1 (0x00000001)
+
+Cycle 58:
+Instruction executed:           beq $v1, $zero exit
+
+Cycle 59:
+Instruction executed:           addi $t5 $zero, 4
+Register modified: $t5 = 4 (0x00000004)
+
+Cycle 60:
+Instruction executed:           mul $t4 $t1, $t5
+Register modified: $t4 = 4 (0x00000004)
+
+Cycle 61: Instruction executed:                 lw $s5   0($t4) (DRAM request issued)
+Cycle 62-65: READ: Register value updated: $s5 = 1 (0x00000001)
+
+Cycle 66:
+Instruction executed:           add $t2 $t2 $s5
+Register modified: $t2 = 1 (0x00000001)
+
+Cycle 67:
+Instruction executed:           addi $t1 $t1 1
+Register modified: $t1 = 2 (0x00000002)
+
+Cycle 68:
+Instruction executed:           j LOOP2
+
+Cycle 69:
+Instruction executed:           slt $v1, $t1, $t0
+Register modified: $v1 = 1 (0x00000001)
+
+Cycle 70:
+Instruction executed:           beq $v1, $zero exit
+
+Cycle 71:
+Instruction executed:           addi $t5 $zero, 4
+Register modified: $t5 = 4 (0x00000004)
+
+Cycle 72:
+Instruction executed:           mul $t4 $t1, $t5
+Register modified: $t4 = 8 (0x00000008)
+
+Cycle 73: Instruction executed:                 lw $s5   0($t4) (DRAM request issued)
+Cycle 74-77: READ: Register value updated: $s5 = 2 (0x00000002)
+
+Cycle 78:
+Instruction executed:           add $t2 $t2 $s5
+Register modified: $t2 = 3 (0x00000003)
+
+Cycle 79:
+Instruction executed:           addi $t1 $t1 1
+Register modified: $t1 = 3 (0x00000003)
+
+Cycle 80:
+Instruction executed:           j LOOP2
+
+Cycle 81:
+Instruction executed:           slt $v1, $t1, $t0
+Register modified: $v1 = 1 (0x00000001)
+
+Cycle 82:
+Instruction executed:           beq $v1, $zero exit
+
+Cycle 83:
+Instruction executed:           addi $t5 $zero, 4
+Register modified: $t5 = 4 (0x00000004)
+
+Cycle 84:
+Instruction executed:           mul $t4 $t1, $t5
+Register modified: $t4 = 12 (0x0000000c)
+
+Cycle 85: Instruction executed:                 lw $s5   0($t4) (DRAM request issued)
+Cycle 86-89: READ: Register value updated: $s5 = 3 (0x00000003)
+
+Cycle 90:
+Instruction executed:           add $t2 $t2 $s5
+Register modified: $t2 = 6 (0x00000006)
+
+Cycle 91:
+Instruction executed:           addi $t1 $t1 1
+Register modified: $t1 = 4 (0x00000004)
+
+Cycle 92:
+Instruction executed:           j LOOP2
+
+Cycle 93:
+Instruction executed:           slt $v1, $t1, $t0
+Register modified: $v1 = 1 (0x00000001)
+
+Cycle 94:
+Instruction executed:           beq $v1, $zero exit
+
+Cycle 95:
+Instruction executed:           addi $t5 $zero, 4
+Register modified: $t5 = 4 (0x00000004)
+
+Cycle 96:
+Instruction executed:           mul $t4 $t1, $t5
+Register modified: $t4 = 16 (0x00000010)
+
+Cycle 97: Instruction executed:                 lw $s5   0($t4) (DRAM request issued)
+Cycle 98-101: READ: Register value updated: $s5 = 4 (0x00000004)
+
+Cycle 102:
+Instruction executed:           add $t2 $t2 $s5
+Register modified: $t2 = 10 (0x0000000a)
+
+Cycle 103:
+Instruction executed:           addi $t1 $t1 1
+Register modified: $t1 = 5 (0x00000005)
+
+Cycle 104:
+Instruction executed:           j LOOP2
+
+Cycle 105:
+Instruction executed:           slt $v1, $t1, $t0
+Register modified: $v1 = 0 (0x00000000)
+
+Cycle 106:
+Instruction executed:           beq $v1, $zero exit
+
+Cycle 107:
+Instruction executed:                           add $a0, $zero, $t2
+Register modified: $a0 = 10 (0x0000000a)
+
+Final writeback:
+Cycle 108: DRAM request issued
+Cycle 109-114: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+______________________________________________________________________________________________________
+
+Total clock cycles: 114
+
+Number of instructions executed for each type are given below:-
+add: 12, addi: 17, beq: 6, bne: 6, j: 10
+lw: 5, mul: 10, slt: 12, sub: 0, sw: 5
+
+Memory content at the end of the execution (Data section):
+0-3 = 0 (0x00000000)
+4-7 = 1 (0x00000001)
+8-11 = 2 (0x00000002)
+12-15 = 3 (0x00000003)
+16-19 = 4 (0x00000004)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 12
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):5 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):5
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

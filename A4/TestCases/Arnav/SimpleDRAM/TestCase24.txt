@@ -1,0 +1,55 @@
+ROW_ACCESS_DELAY = 10, COL_ACCESS_DELAY = 2
+
+addi $t0 $t0 5
+lw $t0 508($zero)
+addi $t1 $t0 508
+add $t0 $zero $t1
+sw $t0 0($t1)
+
+______________________________________________________________________________________________________
+
+Output:
+
+Cycle 1:
+Instruction executed: addi $t0 $t0 5
+Register modified: $t0 = 5 (0x00000005)
+
+Cycle 2: Instruction executed: lw $t0 508($zero) (DRAM request issued)
+Cycle 3-12: ACTIVATION: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+Cycle 13-14: READ: Register value updated: $t0 = 0 (0x00000000)
+
+Cycle 15:
+Instruction executed: addi $t1 $t0 508
+Register modified: $t1 = 508 (0x000001fc)
+
+Cycle 16:
+Instruction executed: add $t0 $zero $t1
+Register modified: $t0 = 508 (0x000001fc)
+
+Cycle 17: Instruction executed: sw $t0 0($t1) (DRAM request issued)
+Cycle 18-19: WRITE: Data updated in ROW BUFFER: Memory Address (Data section): 508-511 = 508 (0x000001fc)
+
+Final writeback:
+Cycle 20: DRAM request issued
+Cycle 21-30: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+______________________________________________________________________________________________________
+
+Total clock cycles: 30
+
+Number of instructions executed for each type are given below:-
+add: 1, addi: 2, beq: 0, bne: 0, j: 0
+lw: 1, mul: 0, slt: 0, sub: 0, sw: 1
+
+Memory content at the end of the execution (Data section):
+508-511 = 508 (0x000001fc)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 4
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):1 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):1
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

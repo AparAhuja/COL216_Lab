@@ -402,6 +402,13 @@ struct REGI {
         // update cycle count and instruction stats, request issued to DRAM
         stat_update(ins_num);
         cout << "Cycle " << cycle_cnt << ": ";
+        if(r1 == 0 && ins_num == 7) {
+            cout << "\nInstruction executed: " << instructions[PC / 4] << "\n";
+            cout << "No DRAM request issued; $zero register!\n";
+            cout << "Register modified: " << num_reg[r1] << " = " << reg[r1] << " (0x" << decimalToHexadecimal(reg[r1]) << ")\n\n";
+            PC += 4;
+            return true;
+        }
         cout << "DRAM request issued for Instruction: " << instructions[PC / 4] << "\n\n";
         
         // add request to Queue
@@ -438,7 +445,7 @@ struct REGI {
             memoryAddress.push_back(addr);
         }    
        
-        cout << "DRAM PROCESSING STARTED: Cycle: " << cycle_start + 1 << ": Instruction: " << req.instruction << "\n\n";
+        cout << "DRAM PROCESSING STARTED: Cycle " << cycle_start + 1 << ": Instruction: " << req.instruction << "\n\n";
         // check if the current buffer row is different from current row or not
         if (start == row_start) {
             if(type == "lw") {value_read++;}
