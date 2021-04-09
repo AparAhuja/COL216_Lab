@@ -4,7 +4,9 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include "DRAM.h"
+#include <queue>
+#include <fstream>
+#include <string>
 
 using namespace std;
 
@@ -46,53 +48,288 @@ string decimalToHexadecimal(long long a) {
     return ans;
 }
 
+struct Request {
+    int addr;
+    int row;
+    int data_bus;
+    int destination;
+    string type;
+    string instruction;
+    int PC;
+};
 
-// function to check if the string represents an integer or not
-bool isInteger(string s) {
-    int len = s.length();
-
-    if (len == 0) return false;
-
-    for (int i = 0; i < len; i++) {
-
-        if (i == 0 && s.at(0) == '-')
-            // might be negative number
-            continue;
-        if (s.at(i) < '0' || s.at(i) > '9') {
-            // not an integer
-            return false;
-        }
-
+struct Queue {
+    map<int, vector<int>> MemToAdj;
+    map<string, pair<int, int>> Pread, Pwrite;
+    map<int, string> reverseMap =
+        { {0, "$zero"}, {1, "$at"}, {2, "$v0"}, {3, "$v1"}, {4, "$a0"}, {5, "$a1"}, {6, "$a2"}, {7, "$a3"}, {8, "$t0"}, {9, "$t1"}, {10, "$t2"},
+        {11, "$t3"}, {12, "$t4"}, {13, "$t5"}, {14, "$t6"}, {15, "$t7"}, {16, "$s0"}, {17, "$s1"}, {18, "$s2"}, {19, "$s3"}, {20, "$s4"}, {21, "$s5"},
+        {22, "$s6"}, {23, "$s7"}, {24, "$t8"}, {25, "$t9"}, {26, "$k0"}, {27, "$k1"}, {28, "$gp"}, {29, "$sp"}, {30, "$fp"}, {31, "$ra"} };
+    vector<queue<Request>> Adj;
+    int adjIndex = 0;
+    
+    bool isEmpty() {
+        return (adjIndex == Adj.size());
     }
-    // is an integer
-    return true;
-}
 
-
-// checks if the label used is a valid identifier or not
-bool validId(string label) {
-
-    int len = label.length(), i = 0;
-
-    // empty string is not a valid id
-    if (len == 0) return false;
-    else {
-
-        if (isalpha(label.at(0)) || label.at(0) == '_') {
-            i++;
-            while (i < len && (isalpha(label.at(i)) || isdigit(label.at(i)) || label.at(i) == '_')) i++;
-            if (i != len)
-                // some invalid character is present in the label
-                return false;
-            else
-                // valid id
-                return true;
+    int BinarySearch(int key, int low, int high, vector<int> &vec) {
+        int mid;
+        if(low > high)
+            return vec.size();
+        while(low < high) {
+            mid = (low + high) / 2;
+            if(vec[mid] < key) {
+                low = mid + 1;
+            }
+            else {
+                //assert: vec[mid] >= key
+                high = mid;
+            }
         }
-        // not a valid id
-        else return false;
+        //assert: low = high
+        if(vec[low] >= key) {
+            //check vec[low]
+            return low;
+        }
+        return vec.size();
     }
-}
 
+    void addRequest(Request req) {
+        int loc;
+        string memAddr;
+        if(MemToAdj.find(req.row) == MemToAdj.end()) {
+            loc = Adj.size();
+            memAddr = to_string(req.addr);
+            // Add to MemToAdj
+            vector<int> vec;
+            vec.push_back(1);
+            vec.push_back(loc);
+            MemToAdj.insert({req.row, vec});
+            // Add to Adj, create a new queue
+            queue<Request> que;
+            que.push(req);
+            Adj.push_back(que);
+            if(req.type == "sw") {
+                // Update pending write
+                Pwrite.insert({memAddr, make_pair(loc, 1)});
+            }
+            else {
+                // req.type == "lw"
+                // Update pending read (memory)
+                Pread.insert({memAddr, make_pair(loc, 1)});
+                // Update pending write (register)
+                int regCode = req.destination;
+                string reg = reverseMap[regCode];
+                if(Pwrite.find(reg) == Pwrite.end()) {
+                    Pwrite.insert({reg, make_pair(loc, 1)});
+                }
+                else {
+                    Pwrite[reg].first = loc;
+                    Pwrite[reg].second = Pwrite[reg].second + 1;
+                }
+            }
+        }
+        else {
+            // memory row is present
+            if(req.type == "sw") {
+                memAddr = to_string(req.addr);
+                if(Pread.find(memAddr) == Pread.end()) {
+                    if(Pwrite.find(memAddr) == Pwrite.end()) {
+                        // no pending read and no pending write
+                        // Add to first Adj location
+                        int i = MemToAdj[req.row][0];
+                        if(i < MemToAdj[req.row].size()) {
+                            loc = MemToAdj[req.row][i];
+                            Adj[loc].push(req);
+                            // Add to Pwrite
+                            Pwrite.insert({memAddr, make_pair(loc, 1)});
+                        }
+                        else {
+                            loc = Adj.size();
+                            MemToAdj[req.row].push_back(loc);
+                            MemToAdj[req.row][0] = MemToAdj[req.row].size();
+                            // Add to Adj
+                            queue<Request> que;
+                            que.push(req);
+                            Adj.push_back(que);
+                            // Add to Pwrite
+                            Pwrite.insert({memAddr, make_pair(loc, 1)});
+                        }
+                    }
+                    else {
+                        // there is a pending write
+                        loc = Pwrite[memAddr].first;
+                        Adj[loc].push(req);
+                        // Update Pwrite
+                        Pwrite[memAddr].second = Pwrite[memAddr].second + 1;
+                    }
+                }
+                else {
+                    // there is a pending read
+                    loc = Pread[memAddr].first;
+                    Adj[loc].push(req);
+                    // Update Pwrite
+                    Pwrite[memAddr].first = loc;
+                    Pwrite[memAddr].second = Pwrite[memAddr].second + 1;
+                }
+            }
+            else {
+                // req.type == "lw"
+                memAddr = to_string(req.addr);
+                string reg = reverseMap[req.destination];
+                if(Pwrite.find(reg) == Pwrite.end()) {
+                    // no pending write on register
+                    if(Pwrite.find(memAddr) == Pwrite.end()) {
+                        // no pending write on memory
+                        int i = MemToAdj[req.row][0];
+                        if(i < MemToAdj[req.row].size()) {
+                            loc = MemToAdj[req.row][i];
+                            Adj[loc].push(req);
+                            if(Pread.find(memAddr) == Pread.end()) {
+                                // Add to Pread
+                                Pread.insert({memAddr, make_pair(loc, 1)});
+                            }
+                            else {
+                                // Update Pread
+                                Pread[memAddr].first = loc > Pread[memAddr].first ? loc : Pread[memAddr].first;
+                                Pread[memAddr].second = Pread[memAddr].second + 1;
+                            }
+                            // Add register to Pwrite
+                            Pwrite.insert({reg, make_pair(loc, 1)});
+                        }
+                        else {
+                            loc = Adj.size();
+                            MemToAdj[req.row].push_back(loc);
+                            MemToAdj[req.row][0] = MemToAdj[req.row].size();
+                            queue<Request> que;
+                            que.push(req);
+                            Adj.push_back(que);
+                            if(Pread.find(memAddr) == Pread.end()) {
+                                // Add to Pread
+                                Pread.insert({memAddr, make_pair(loc, 1)});
+                            }
+                            else {
+                                // Update Pread
+                                Pread[memAddr].first = loc > Pread[memAddr].first ? loc : Pread[memAddr].first;
+                                Pread[memAddr].second = Pread[memAddr].second + 1;
+                            }
+                            // Add register to Pwrite
+                            Pwrite.insert({reg, make_pair(loc, 1)});
+                        }
+                    }
+                    else {
+                        // there is a pending write on memory
+                        loc = Pwrite[memAddr].first;
+                        Adj[loc].push(req);
+                        if(Pread.find(memAddr) == Pread.end()) {
+                            // Add to Pread
+                            Pread.insert({memAddr, make_pair(loc, 1)});
+                        }
+                        else {
+                            // Update Pread
+                            if(Pread[memAddr].first < loc) {
+                                Pread[memAddr].first = loc;
+                            }
+                            Pread[memAddr].second = Pread[memAddr].second + 1;
+                        }
+                        // Add register to Pwrite
+                        Pwrite.insert({reg, make_pair(loc, 1)});
+                    }
+                }
+                else {
+                    // there is a pending write on register
+                    int key = Pwrite[reg].first;
+                    int low, high;
+                    if(Pwrite.find(memAddr) != Pwrite.end()) {
+                        if(key < Pwrite[memAddr].first) {
+                            key = Pwrite[memAddr].first;
+                        }
+                    }
+                    low = MemToAdj[req.row][0];
+                    high = MemToAdj[req.row].size() - 1;
+                    int i = BinarySearch(key, low, high, MemToAdj[req.row]);
+                    if(i < low || i > high) {
+                        // Add new queue
+                        loc = Adj.size();
+                        queue<Request> que;
+                        que.push(req);
+                        Adj.push_back(que);
+                        MemToAdj[req.row].push_back(loc);
+                        // Update Pwrite
+                        Pwrite[reg].first = loc;
+                        Pwrite[reg].second = Pwrite[reg].second + 1;
+                        if(Pread.find(memAddr) == Pread.end()) {
+                            // Add to Pread
+                            Pread.insert({memAddr, make_pair(loc, 1)});
+                        }
+                        else {
+                            // Update Pread
+                            Pread[memAddr].first = loc;
+                            Pread[memAddr].second = Pread[memAddr].second + 1;
+                        }
+                    }
+                    else {
+                        // i is the upmost safest queue
+                        loc = MemToAdj[req.row][i];
+                        Adj[loc].push(req);
+                        // Update Pwrite
+                        Pwrite[reg].first = loc;
+                        Pwrite[reg].second = Pwrite[reg].second + 1;
+                        if(Pread.find(memAddr) == Pread.end()) {
+                            // Add to Pread
+                            Pread.insert({memAddr, make_pair(loc, 1)});
+                        }
+                        else {
+                            // Update Pread
+                            if(Pread[memAddr].first < loc) {
+                                Pread[memAddr].first = loc;
+                            }
+                            Pread[memAddr].second = Pread[memAddr].second + 1;
+                        }
+                    }
+                }
+            }
+        }
+        // remove pending write on zero register if any
+        if(Pwrite.find("$zero") != Pwrite.end()) {
+            Pwrite.erase("$zero");
+        }
+    }
+
+    Request getRequest() {
+        Request req = Adj[adjIndex].front();
+        return req;
+    }
+
+    void deleteRequest() {
+        Request req = Adj[adjIndex].front();
+        Adj[adjIndex].pop();
+        if(Adj[adjIndex].empty()) {
+            adjIndex ++;
+            MemToAdj[req.row][0] ++;
+        }
+        string memAddr = to_string(req.addr);
+        if(req.type == "sw") {
+            Pwrite[memAddr].second --;
+            if(Pwrite[memAddr].second == 0) {
+                Pwrite.erase(memAddr);
+            }
+        }
+        else {
+            // req.type == "lw"
+            Pread[memAddr].second --;
+            if(Pread[memAddr].second == 0) {
+                Pread.erase(memAddr);
+            }
+            string reg = reverseMap[req.destination];
+            Pwrite[reg].second --;
+            if(Pwrite[reg].second == 0) {
+                Pwrite.erase(reg);
+            }
+        }
+    }
+
+};
 
 // Register and Instruction structure
 struct REGI {
@@ -743,6 +980,7 @@ struct REGI {
     }
 };
 
+#include "OldFunctions.h"
 
 // this function simulates the execution of MIPS program
 // modified function
@@ -823,562 +1061,6 @@ bool simulator(REGI& rf, Queue &q) {
     // PC = PARTITION, so execution is complete (successful)
     rf.buffer();
     rf.execution_stats();
-    return true;
-}
-
-
-// checks if a given line of code represents a MIPS label
-pair<pair<string, string>, pair<bool, bool>> checkIfLabel(string line, int line_number) {
-
-    int len = line.length(), i = 0;
-    string label = "";
-
-    // parse initial white spaces
-    while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
-    if (i == len)
-        // no label
-        return make_pair(make_pair(label, line), make_pair(false, true));
-
-    // parse label
-    while (i < len && line.at(i) != ' ' && line.at(i) != ':' && line.at(i) != '\t') {
-        label = label + line[i];
-        i++;
-    }
-    //parse any extra white spaces
-    while (i < len && (line.at(i) == ' ' || line.at(i) == '\t')) i++;
-    if (i == len)
-        // no label
-        return make_pair(make_pair(label, line), make_pair(false, true));
-
-    // else
-    // check if there is a colon
-    if (line.at(i) == ':') {
-        i++;
-        // can be a label
-        // check if it is a valid identifier
-        bool flag = validId(label);
-        if (!flag) {
-            // syntax error
-            cout << "SYNTAX ERROR (Illegal Label): At line number: " << line_number << ": " << line << "\n";
-            return make_pair(make_pair(label, line), make_pair(false, false));
-        }
-        else {
-            // valid label
-            // make remaining string
-            string line_r = "";
-            while (i < len) {
-                line_r = line_r + line[i];
-                i++;
-            }
-            // return
-            return make_pair(make_pair(label, line_r), make_pair(true, true));
-        }
-    }
-    // else it is not a label
-    return make_pair(make_pair(label, line), make_pair(false, true));
-
-}
-
-
-// function used to parse a line of MIPS code (not containg any label) and generate appropriate arguments
-pair<vector<string>, bool> parseInstruction(string instruction) {
-
-    // args stores instruction arguments
-    vector<string> args;
-    // len stores length of the instruction
-    int len = instruction.length();
-    // instruction counter
-    int i = 0;
-    // maximum of 4 arguments can be present in a valid instruction
-    string code = "", arg1 = "", arg2 = "", arg3 = "";
-
-    // read all initial white spaces
-    while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-    // return if there are only white spaces with true (no error)
-    if (i == len||instruction.at(i)=='#')
-        return make_pair(args, true);
-
-    // else
-    else {
-        // read all non-whitespace, non-comma characters, store them in code
-        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '\t') {
-            code = code + instruction[i];
-            i++;
-        }
-        // return error if code is still empty
-        if (code.length() == 0) {
-            return make_pair(args, false);
-        }
-
-        // else
-        else {
-            // push back the first argument
-            args.push_back(code);
-
-            // read all immediate white spaces
-            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-            // if there are no more arguments, return error
-            if (i == len)
-                return make_pair(args, false);
-
-            // else
-            else {
-
-                // read all non-whitespace, non-comma characters, store them in arg1                 
-                while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '\t') {
-                    arg1 = arg1 + instruction[i];
-                    i++;
-                }
-                // return error if arg1 is still empty
-                if (arg1.length() == 0)
-                    return make_pair(args, false);
-                // else
-                else {
-                    // push back the second argument
-                    args.push_back(arg1);
-
-                    // read all immediate white spaces
-                    while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-                    // if there are no more arguments, then it can be jump instruction, so return true
-                    if (i == len)
-                        return make_pair(args, true);
-
-                    // else
-                    else {
-                        // read comma if any
-                        if (instruction.at(i) == ',') i++;
-                        // read all intermediary white spaces
-                        while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-                        // if there are no more arguments, return error
-                        if (i == len)
-                            return make_pair(args, false);
-                        // else
-                        // read all non-white space, non-comma, non-LPAREN characters, store them in arg2
-                        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '(' && instruction.at(i) != '\t') {
-                            arg2 = arg2 + instruction[i];
-                            i++;
-                        }
-                        // return error if arg2 is still empty
-                        if (arg2.length() == 0)
-                            return make_pair(args, false);
-
-                        // else
-                        else {
-                            // push back the third argument
-                            args.push_back(arg2);
-                            // read immediate white spaces
-                            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-                            // if there are no more arguments, return error 
-                            if (i == len)
-                                return make_pair(args, false);
-                            // else
-                            else {
-                                // read comma, if any
-                                if (instruction.at(i) == ',') {
-                                    i++;
-                                    // read inter-mediary white spaces
-                                    while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-                                    // if there are no more arguments, return error
-                                    if (i == len)
-                                        return make_pair(args, false);
-                                    // read all non-whitespace, non-comma characters, store them in arg3
-                                    while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ',' && instruction.at(i) != '\t') {
-                                        arg3 = arg3 + instruction[i];
-                                        i++;
-                                    }
-                                    // return error if arg3 is still empty
-                                    if (arg3.length() == 0)
-                                        return make_pair(args, false);
-                                    // else
-                                    else {
-                                        // push back the fourth argument
-                                        args.push_back(arg3);
-                                        // read trailing white spaces
-                                        while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-                                        // if instruction has ended, then return true
-                                        if (i == len)
-                                            return make_pair(args, true);
-                                        // else, it is a non-instruction
-                                        else return make_pair(args, false);
-                                    }
-                                }
-                                else {
-                                    // if there was a LPAREN (basically lw/sw commands)
-                                    if (instruction.at(i) == '(') {
-                                        i++;
-                                        // read any inter-mediary white spaces
-                                        while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-                                        // if there are no more arguments, return error
-                                        if (i == len)
-                                            return make_pair(args, false);
-                                        // else
-                                        // read all non-whitespace, non-RPAREN characters, store them in arg3
-                                        while (i < len && instruction.at(i) != ' ' && instruction.at(i) != ')' && instruction.at(i) != '\t') {
-                                            arg3 = arg3 + instruction[i];
-                                            i++;
-                                        }
-                                        // return error if arg3 is still empty
-                                        if (arg3.length() == 0)
-                                            return make_pair(args, false);
-                                        // else
-                                        else {
-                                            // push back the fourth argument
-                                            args.push_back(arg3);
-                                            // read any trailing white spaces
-                                            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-                                            // if the next character is not a RPAREN, return error
-                                            if (instruction.at(i) != ')')
-                                                return make_pair(args, false);
-                                            else i++;
-                                            // else
-                                            // read any trailing white spaces
-                                            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) i++;
-                                            // if the instruction is completely parsed, return true, else return false
-                                            if (i == len)
-                                                return make_pair(args, true);
-                                            else return make_pair(args, false);
-                                        }
-                                    }
-                                    // neither LPAREN, nor a comma
-                                    else {
-                                        // read all non-whitespace characters, store them in arg3
-                                        while (i < len && (instruction.at(i) != ' ' || instruction.at(i) == '\t')) {
-                                            arg3 = arg3 + instruction[i];
-                                            i++;
-                                        }
-                                        // return error if arg3 is still empty
-                                        if (arg3.length() == 0)
-                                            return make_pair(args, false);
-                                        // else
-                                        else {
-                                            // push back the fourth argument
-                                            args.push_back(arg3);
-                                            // read trailing white spaces, if any
-                                            while (i < len && (instruction.at(i) == ' ' || instruction.at(i) == '\t')) {
-                                                i++;
-                                            }
-                                            // if the instruction is completely parsed, return true, else return false
-                                            if (i == len)
-                                                return make_pair(args, true);
-                                            else return make_pair(args, false);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-// new function added
-string removeSpaces(string line){
-    int i = 0, j = line.length() - 1;
-    while(i<line.length() && (line.at(i) == ' ' || line.at(i) == '\t')){
-        i++;
-    }
-    while(j >= 0 && (line.at(j) == ' ' || line.at(j) == '\t')){
-        j--;
-    }
-    return line.substr(i, j + 1 - i);
-}
-
-// function used to a line of MIPS code to memory, if it is an instruction
-// modified function
-// removed redundant white spaces / tabs
-bool addToMemory(string line, REGI& rf, int line_number) {
-    // args will be used to store the instruction arguments
-    vector<string> args;
-    bool flag;
-    int len;
-    // check if there is a label
-    pair<pair<string, string>, pair<bool, bool>> label = checkIfLabel(line, line_number);
-    if (label.second.second == false)
-        // there was some error
-        return false;
-    else {
-        // not a syntax error
-        if (label.second.first == true) {
-            // valid label
-            // check if the label is already there
-            if (rf.labels.find(label.first.first) != rf.labels.end()) {
-                // syntax error (same label used for two different memory addresses)
-                cout << "Error: Same label used to represent different addresses.\nLabel repeated: " << label.first.first << ": at line number: " << line_number << "\n";
-                return false;
-            }
-            else {
-                // add label to map
-                rf.labels.insert({ label.first.first, PC });
-            }
-        }
-    }
-    pair<vector<string>, bool> Pair = parseInstruction(label.first.second);
-    // store arguments
-    args = Pair.first;
-    // store whether or not there was a syntax error
-    flag = Pair.second;
-
-    if (!flag) {
-        // there was a syntax error
-        cout << "SYNTAX ERROR 1: At line number: " << line_number << ": " << line << "\n";
-        return false;
-    }
-    else {
-        // check if there are no arguments
-        if (args.size() == 0)
-            return true;
-        else {
-
-            // ignore the case of instruction, convert it into lower case
-            transform(args[0].begin(), args[0].end(), args[0].begin(), ::tolower);
-
-            // check if the instruction is valid or not
-            if (rf.ins_map.find(args[0]) == rf.ins_map.end()) {
-                // invalid instruction
-                cout << "SYNTAX ERROR 2: At line number: " << line_number << ": " << line << "\n";
-                return false;
-            }
-            // else store the instruction in memory
-            int ins = rf.ins_map[args[0]];
-            DRAM[PC] = ins;
-            // store the number of arguments in len
-            len = args.size();
-
-            //jump
-            if (ins == 6) {
-                if (len != 2) {
-                    // as jump should have only 2 arguments
-                    cout << "SYNTAX ERROR 3: At line number: " << line_number << ": " << line << "\n";
-                    return false;
-                }
-                else {
-                    if (!isInteger(args[1])) {
-                        if (!validId(args[1])) {
-                            // not a valid label address
-                            cout << "SYNTAX ERROR 4: At line number: " << line_number << ": " << line << "\n";
-                            return false;
-                        }
-                        // else, it is a valid id, push it
-                        rf.label.push_back(make_pair(args[1], make_pair(PC + 1, line_number)));
-                    }
-                    else {
-                        long long addr = stoi(args[1]);
-                        if (addr < 0 || addr >= 67108864) {
-                            // address starts from 0 and max integer that can be stored is 2^26 - 1
-                            cout << "SYNTAX ERROR 5: At line number: " << line_number << ": " << "\n";
-                            return false;
-                        }
-                        // else store the value (absolute address) in memory
-                        DRAM[PC + 1] = 4 * addr;
-                    }
-                }
-            }
-
-            //add sub mul slt
-            else if (ins == 0 || ins == 1 || ins == 2 || ins == 5) {
-                if (len != 4) {
-                    // add sub mul slt require 4 arguments each
-                    cout << "SYNTAX ERROR 6: At line number: " << line_number << ": " << line << "\n";
-                    return false;
-                }
-                else {
-                    // check if any of the register used is invalid
-                    if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end() || rf.reg_map.find(args[3]) == rf.reg_map.end()) {
-                        // invalid register used, syntax error
-                        cout << "SYNTAX ERROR 7: At line number: " << line_number << ": " << line << "\n";
-                        return false;
-                    }
-                    else {
-                        // store register numbers in memory
-                        DRAM[PC + 1] = rf.reg_map[args[1]];
-                        DRAM[PC + 2] = rf.reg_map[args[2]];
-                        DRAM[PC + 3] = rf.reg_map[args[3]];
-                        int temp = DRAM[PC + 1];
-                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                            return false;
-                        }
-                        temp = DRAM[PC + 2];
-                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                            return false;
-                        }
-                        temp = DRAM[PC + 3];
-                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            //beq bne addi
-            else if (ins == 3 || ins == 4 || ins == 9) {
-                if (len != 4) {
-                    // beq bne addi require 4 arguments each
-                    cout << "SYNTAX ERROR 8: At line number: " << line_number << ": " << line << "\n";
-                    return false;
-                }
-                else {
-                    if (ins == 9) {
-                        // check if any of the register used is invalid
-                        // also check if the last argument is an immediate or not
-                        if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end() || !isInteger(args[3])) {
-                            // invalid arguments, syntax error
-                            cout << "SYNTAX ERROR 9: At line number: " << line_number << ": " << line << "\n";
-                            return false;
-                        }
-                        else {
-                            long long immediate = stoi(args[3]);
-
-                            // raise overflow error if necessary (only 16 bit immediate)
-                            if (immediate < -32768 || immediate > 32767) {
-                                cout << "Immediate Overflow ERROR: At line number: " << line_number << ": " << "\n";
-                                return false;
-                            }
-                            // else
-                            // store register numbers and immediate in memory
-                            DRAM[PC + 1] = rf.reg_map[args[1]];
-                            DRAM[PC + 2] = rf.reg_map[args[2]];
-                            DRAM[PC + 3] = immediate;
-                            int temp = DRAM[PC + 1];
-                            if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                                cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                                return false;
-                            }
-                            temp = DRAM[PC + 2];
-                            if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                                cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                                return false;
-                            }
-                        }
-                    }
-                    else {
-                        // bne or beq
-                        // check if any of the register used is invalid
-                        if (rf.reg_map.find(args[1]) == rf.reg_map.end() || rf.reg_map.find(args[2]) == rf.reg_map.end()) {
-                            // invalid arguments, syntax error
-                            cout << "SYNTAX ERROR 10: At line number: " << line_number << ": " << line << "\n";
-                            return false;
-                        }
-                        else {
-                            // store register
-                            DRAM[PC + 1] = rf.reg_map[args[1]];
-                            DRAM[PC + 2] = rf.reg_map[args[2]];
-                            int temp = DRAM[PC + 1];
-                            if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                                cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                                return false;
-                            }
-                            temp = DRAM[PC + 2];
-                            if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                                cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                                return false;
-                            }
-                            if (isInteger(args[3])) {
-                                long long immediate = stoi(args[3]);
-
-                                // raise overflow error if necessary
-                                if (immediate < -32768 || immediate > 32767) {
-                                    cout << "Immediate Overflow ERROR: At line number: " << line_number << ": " << "\n";
-                                    return false;
-                                }
-                                // else
-                                // store immediate (absolute jump address) in memory
-                                DRAM[PC + 3] = PC + 4 + 4 * immediate;
-                            }
-                            else {
-                                if (validId(args[3])) {
-                                    rf.label.push_back(make_pair(args[3], make_pair(PC + 3, line_number)));
-                                }
-                                else {
-                                    // invalid label, raise error
-                                    cout << "SYNTAX ERROR 11: At line number: " << line_number << ": " << line << "\n";
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            //sw lw
-            else {
-                if (len != 4) {
-                    // sw lw require 4 arguments each
-                    cout << "SYNTAX ERROR 12: At line number: " << line_number << ": " << line << "\n";
-                    return false;
-                }
-                else {
-                    // check if the registers are valid or not, also check if the second argument is an immediate or not
-                    if (rf.reg_map.find(args[1]) == rf.reg_map.end() || !isInteger(args[2]) || rf.reg_map.find(args[3]) == rf.reg_map.end()) {
-                        // invalid arguments, syntax error
-                        cout << "SYNTAX ERROR 13: At line number: " << line_number << ": " << line << "\n";
-                        return false;
-                    }
-                    else {
-                        long long immediate = stoi(args[2]);
-
-                        // raise overflow error if necessary
-                        if (immediate < -32768 || immediate > 32767) {
-                            cout << "Immediate Overflow ERROR: At line number: " << line_number << ": " << "\n";
-                            return false;
-                        }
-                        // store register numbers and immediate in memory
-                        DRAM[PC + 1] = rf.reg_map[args[1]];
-                        DRAM[PC + 2] = immediate;
-                        DRAM[PC + 3] = rf.reg_map[args[3]];
-                        int temp = DRAM[PC + 1];
-                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                            return false;
-                        }
-                        temp = DRAM[PC + 3];
-                        if (temp == 1 || temp == 26 || temp == 27 || temp == 28) {
-                            cout << "Access Error: Trying to access reserved register: At line number: " << line_number << ": " << line << "\n";
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    // increment program counter by 4 (next storage address)
-    PC += 4;
-    
-    // store the instruction as well
-    line = removeSpaces(label.first.second);
-    rf.instructions.push_back(line);
-    // instruction stored successfully
-    return true;
-}
-
-
-// function used to resolve labels
-bool linker(REGI& rf) {
-
-    // label stores all the unresolved labels
-    int len = rf.label.size();
-
-    for (int i = 0; i < len; i++) {
-
-        pair<string, pair<int, int>> label = rf.label[i];
-        // check if label is actually defined
-        if (rf.labels.find(label.first) == rf.labels.end()) {
-            // illegal label, raise error
-            cout << "Linking Error: Unable to resolve label used on line: " << label.second.second << "\n";
-            return false;
-        }
-        else {
-            // resolve label
-            int label_loc = rf.labels[label.first];
-            DRAM[label.second.first] = label_loc;
-        }
-
-    }
-    // all labels resolved
     return true;
 }
 
