@@ -1,0 +1,8 @@
+
+addi $t0 $t0 32768
+
+
+OUTPUT -
+
+Immediate Overflow ERROR: At line number: 2: 
+Program terminating!

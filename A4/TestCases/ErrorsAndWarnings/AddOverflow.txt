@@ -1,5 +1,3 @@
-ROW_ACCESS_DELAY = 6, COL_ACCESS_DELAY = 4
-
 addi $t0 $t0 32767
 add $t2 $t2 $t0
 add $t2 $t2 $t2
@@ -32,92 +30,111 @@ add $t2 $t2 $t2
 add $t2 $t2 $t2
 add $t2 $t2 $t2
 
-______________________________________________________________________________________________________
-
-Output:
+OUTPUT -
 
 Cycle 1:
 Instruction executed: addi $t0 $t0 32767
+Memory Address of Instruction: 0
 Register modified: $t0 = 32767 (0x00007fff)
 
 Cycle 2:
 Instruction executed: add $t2 $t2 $t0
+Memory Address of Instruction: 4
 Register modified: $t2 = 32767 (0x00007fff)
 
 Cycle 3:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 8
 Register modified: $t2 = 65534 (0x0000fffe)
 
 Cycle 4:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 12
 Register modified: $t2 = 131068 (0x0001fffc)
 
 Cycle 5:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 16
 Register modified: $t2 = 262136 (0x0003fff8)
 
 Cycle 6:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 20
 Register modified: $t2 = 524272 (0x0007fff0)
 
 Cycle 7:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 24
 Register modified: $t2 = 1048544 (0x000fffe0)
 
 Cycle 8:
 Instruction executed: add $t2 $t2 $t0
+Memory Address of Instruction: 28
 Register modified: $t2 = 1081311 (0x00107fdf)
 
 Cycle 9:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 32
 Register modified: $t2 = 2162622 (0x0020ffbe)
 
 Cycle 10:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 36
 Register modified: $t2 = 4325244 (0x0041ff7c)
 
 Cycle 11:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 40
 Register modified: $t2 = 8650488 (0x0083fef8)
 
 Cycle 12:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 44
 Register modified: $t2 = 17300976 (0x0107fdf0)
 
 Cycle 13:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 48
 Register modified: $t2 = 34601952 (0x020ffbe0)
 
 Cycle 14:
 Instruction executed: add $t2 $t2 $t0
+Memory Address of Instruction: 52
 Register modified: $t2 = 34634719 (0x02107bdf)
 
 Cycle 15:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 56
 Register modified: $t2 = 69269438 (0x0420f7be)
 
 Cycle 16:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 60
 Register modified: $t2 = 138538876 (0x0841ef7c)
 
 Cycle 17:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 64
 Register modified: $t2 = 277077752 (0x1083def8)
 
 Cycle 18:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 68
 Register modified: $t2 = 554155504 (0x2107bdf0)
 
 Cycle 19:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 72
 Register modified: $t2 = 1108311008 (0x420f7be0)
 
 Cycle 20:
 Instruction executed: add $t2 $t2 $t0
+Memory Address of Instruction: 76
 Register modified: $t2 = 1108343775 (0x420ffbdf)
 
 Cycle 21:
 Instruction executed: add $t2 $t2 $t2
+Memory Address of Instruction: 80
 Error: Arithmetic Overflow. Program terminating!
 
 ______________________________________________________________________________________________________

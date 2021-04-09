@@ -1,0 +1,6 @@
+lw $t0 32768($zero)
+
+OUTPUT -
+
+Immediate Overflow ERROR: At line number: 1: 
+Program terminating!

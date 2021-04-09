@@ -1,8 +1,0 @@
-sw $t1
-
-_____________
-
-Output:
-
-SYNTAX ERROR 12: At line number: 1: sw $t1
-Program terminating!

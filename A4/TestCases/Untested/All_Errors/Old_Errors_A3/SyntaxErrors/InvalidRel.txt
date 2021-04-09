@@ -1,8 +1,0 @@
-beq $t1 $t1 lbckhsdvk()
-
-____________________________
-
-Output:
-
-SYNTAX ERROR 11: At line number: 1: beq $t1 $t1 lbckhsdvk()
-Program terminating!

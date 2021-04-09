@@ -1,9 +1,0 @@
-j 5 5 5
-
-______________
-
-Output:
-
-SYNTAX ERROR 3: At line number: 1: j 5 5 5
-Program terminating!
-

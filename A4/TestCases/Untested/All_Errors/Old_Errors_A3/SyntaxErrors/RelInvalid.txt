@@ -1,8 +1,0 @@
-beq $t2
-
-______________
-
-Output:
-
-SYNTAX ERROR 8: At line number: 1: beq $t2
-Program terminating!

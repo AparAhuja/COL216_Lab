@@ -1,0 +1,71 @@
+addi $t0 $t0 5
+lw $t0 508($zero)
+addi $t1 $t0 508
+sw $t0 0($t1)
+add $a0 $zero $t1
+
+OUTPUT -
+
+WARNING: Extra command line arguments were provided! Maximum four arguments are expected from the user.
+Refer to README.md for more details..
+Cycle 1:
+Instruction executed: addi $t0 $t0 5
+Memory Address of Instruction: 0
+Register modified: $t0 = 5 (0x00000005)
+
+Cycle 2: DRAM request issued for Instruction: lw $t0 508($zero)
+Memory Address of Instruction: 4
+
+DRAM PROCESSING STARTED: Cycle 3: Instruction: lw $t0 508($zero)
+Memory Address of Instruction: 4
+
+Cycle 3-14: DRAM request completed for Instruction: lw $t0 508($zero)
+	  Memory Address of Instruction: 4
+	  ACTIVATION: Cycle 3-12: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+	  READ:       Cycle 13-14: Register value updated: $t0 = 0 (0x00000000)
+
+Cycle 15:
+Instruction executed: addi $t1 $t0 508
+Memory Address of Instruction: 8
+Register modified: $t1 = 508 (0x000001fc)
+
+Cycle 16: DRAM request issued for Instruction: sw $t0 0($t1)
+Memory Address of Instruction: 12
+
+DRAM PROCESSING STARTED: Cycle 17: Instruction: sw $t0 0($t1)
+Memory Address of Instruction: 12
+
+Cycle 17:
+Instruction executed: add $a0 $zero $t1
+Memory Address of Instruction: 16
+Register modified: $a0 = 508 (0x000001fc)
+
+Cycle 17-18: DRAM processing for Instruction: sw $t0 0($t1): completed.
+	  Memory Address of Instruction: 12
+	  WRITE: Cycle 17-18: Data updated in ROW BUFFER: Memory Address (Data section): 508-511 = 0 (0x00000000)
+
+PROGRAM EXECUTION ENDED.
+Executing pending writeback:
+Cycle 19: DRAM request issued
+Cycle 20-29: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+______________________________________________________________________________________________________
+
+Total clock cycles: 29
+
+Number of instructions executed for each type are given below:-
+add: 1, addi: 2, beq: 0, bne: 0, j: 0
+lw: 1, mul: 0, slt: 0, sub: 0, sw: 1
+
+Memory content at the end of the execution (Data section):
+508-511 = 0 (0x00000000)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 4
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):1 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):1
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

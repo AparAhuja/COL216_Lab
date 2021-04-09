@@ -1,12 +1,8 @@
-ROW_ACCESS_DELAY = 6, COL_ACCESS_DELAY = 4
+lw $t1, 3($zero)
 
-sw $t1, 3($zero)
+OUTPUT -
 
-______________________________________________________________________________________________________
-
-Output:
-
-Error: Memory address is not word-aligned. Invalid store operation. Program Terminating!
+Error: Memory address is not word-aligned. Invalid load operation. Program Terminating!
 
 ______________________________________________________________________________________________________
 
