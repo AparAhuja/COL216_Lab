@@ -1435,7 +1435,7 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    //file_path = "/Users/aparahuja/Desktop/GitHub/COL216_Lab/A4/TestCases/Relational/Relational_LARGE.txt";
+    //file_path = "/Users/aparahuja/Desktop/GitHub/COL216_Lab/A4/TestCases/Untested/ErrorsAndWarnings/Warning_ExtaArguments.txt";
 //    ROW_ACCESS_DELAY = 4;
 //    COL_ACCESS_DELAY = 6;
                       //ROW_ACCESS_DELAY = 10; COL_ACCESS_DELAY = 2;
