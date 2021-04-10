@@ -1,0 +1,19 @@
+sub $ra $t7 $s2
+lw $zero 4304($zero)
+mul $t9 $zero $t9
+sw $s7 58760($zero)
+lw $s2 4304($zero)
+sw $s6 58760($zero)
+lw $zero 4304($zero)
+add $zero $s3 $ra
+addi $s3 $a3 -17508
+sw $t1 58760($zero)
+sw $t8 4304($zero)
+Label13:
+add $s4 $s2 $s1
+slt $zero $s0 $t7
+j Label13:
+
+mul $v1 $t3 $zero
+Label18:
+Label19:
