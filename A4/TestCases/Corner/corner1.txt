@@ -6,11 +6,13 @@ sw $t0, 1000($zero)
 lw $zero, 1000($zero)
 lw $t0, 1000($zero)
 
+_________________________________________
 
-OUTPUT -
+Output:
 
 Cycle 1: 
 Instruction executed: lw $zero, 1000($zero)
+Memory Address of Instruction: 0
 No DRAM request issued; $zero register!
 Register modified: $zero = 0 (0x00000000)
 
@@ -19,7 +21,7 @@ Instruction executed: addi $t0, $t0, 5
 Memory Address of Instruction: 4
 Register modified: $t0 = 5 (0x00000005)
 
-Cycle 3: DRAM request issued for Instruction: sw $t0, 1000($zero)
+Cycle 3: DRAM request issued for Instruction: sw $t0, 1000($zero) 
 Memory Address of Instruction: 8
 
 DRAM PROCESSING STARTED: Cycle 4: Instruction: sw $t0, 1000($zero)
@@ -27,6 +29,7 @@ Memory Address of Instruction: 8
 
 Cycle 4: 
 Instruction executed: lw $zero, 1000($zero)
+Memory Address of Instruction: 12
 No DRAM request issued; $zero register!
 Register modified: $zero = 0 (0x00000000)
 
@@ -34,16 +37,16 @@ Cycle 5: DRAM request issued for Instruction: lw $t0, 1000($zero)
 Memory Address of Instruction: 16
 
 Cycle 4-11: DRAM request completed for Instruction: sw $t0, 1000($zero)
-	  Memory Address of Instruction: 8
-	  ACTIVATION: Cycle 4-9: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
-	  WRITE:      Cycle 10-11: Data updated in ROW BUFFER: Memory Address (Data section): 1000-1003 = 5 (0x00000005)
+          Memory Address of Instruction: 8
+          ACTIVATION: Cycle 4-9: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+          WRITE:      Cycle 10-11: Data updated in ROW BUFFER: Memory Address (Data section): 1000-1003 = 5 (0x00000005)
 
 DRAM PROCESSING STARTED: Cycle 12: Instruction: lw $t0, 1000($zero)
 Memory Address of Instruction: 16
 
 Cycle 12-13: DRAM processing for Instruction: lw $t0, 1000($zero): completed.
-	  Memory Address of Instruction: 16
-	  READ:  Cycle 12-13: Register value updated: $t0 = 5 (0x00000005)
+          Memory Address of Instruction: 16
+          READ:  Cycle 12-13: Register value updated: $t0 = 5 (0x00000005)
 
 PROGRAM EXECUTION ENDED.
 Executing pending writeback:

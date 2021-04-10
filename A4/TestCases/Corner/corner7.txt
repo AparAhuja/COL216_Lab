@@ -1,0 +1,75 @@
+#ROW_ACCESS_DELAY = 1, COL_ACCESS_DELAY = 1
+
+sw $t0, 1000($zero)
+sw $t0, 1024($zero)
+addi $t0, $t0, 5
+lw $t0, 500($zero)
+
+_______________________________________________________________________
+
+Output:
+
+Cycle 1: DRAM request issued for Instruction: sw $t0, 1000($zero)
+Memory Address of Instruction: 0
+
+DRAM PROCESSING STARTED: Cycle 2: Instruction: sw $t0, 1000($zero)
+Memory Address of Instruction: 0
+
+Cycle 2: DRAM request issued for Instruction: sw $t0, 1024($zero)
+Memory Address of Instruction: 4
+
+Cycle 3:
+Instruction executed: addi $t0, $t0, 5
+Memory Address of Instruction: 8
+Register modified: $t0 = 5 (0x00000005)
+
+Cycle 2-3: DRAM request completed for Instruction: sw $t0, 1000($zero)
+          Memory Address of Instruction: 0
+          ACTIVATION: Cycle 2-2: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+          WRITE:      Cycle 3-3: Data updated in ROW BUFFER: Memory Address (Data section): 1000-1003 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle 4: Instruction: sw $t0, 1024($zero)
+Memory Address of Instruction: 4
+
+Cycle 4: DRAM request issued for Instruction: lw $t0, 500($zero)
+Memory Address of Instruction: 12
+
+Cycle 4-6: DRAM request completed for Instruction: sw $t0, 1024($zero)
+          Memory Address of Instruction: 4
+          WRITEBACK:  Cycle 4-4: Copying from ROW BUFFER to DRAM (Row (Data section): 0-1023)
+          ACTIVATION: Cycle 5-5: Copying from DRAM to ROW BUFFER (Row (Data section): 1024-2047)
+          WRITE:      Cycle 6-6: Data updated in ROW BUFFER: Memory Address (Data section): 1024-1027 = 0 (0x00000000)
+
+DRAM PROCESSING STARTED: Cycle 7: Instruction: lw $t0, 500($zero)
+Memory Address of Instruction: 12
+
+Cycle 7-9: DRAM request completed for Instruction: lw $t0, 500($zero)
+          Memory Address of Instruction: 12
+          WRITEBACK:  Cycle 7-7: Copying from ROW BUFFER to DRAM (Row (Data section): 1024-2047)
+          ACTIVATION: Cycle 8-8: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+          READ:       Cycle 9-9: Register value updated: $t0 = 0 (0x00000000)
+
+PROGRAM EXECUTION ENDED.
+______________________________________________________________________________________________________
+
+Total clock cycles: 9
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 1, beq: 0, bne: 0, j: 0
+lw: 1, mul: 0, slt: 0, sub: 0, sw: 2
+
+Memory content at the end of the execution (Data section):
+500-503 = 0 (0x00000000)
+1000-1003 = 0 (0x00000000)
+1024-1027 = 0 (0x00000000)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 8
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 2
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 3 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):2 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):1
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!

@@ -147,7 +147,6 @@ struct Queue {
                         else {
                             loc = Adj.size();
                             MemToAdj[req.row].push_back(loc);
-                            MemToAdj[req.row][0] = MemToAdj[req.row].size();
                             // Add to Adj
                             queue<Request> que;
                             que.push(req);
@@ -169,8 +168,13 @@ struct Queue {
                     loc = Pread[memAddr].first;
                     Adj[loc].push(req);
                     // Update Pwrite
-                    Pwrite[memAddr].first = loc;
-                    Pwrite[memAddr].second = Pwrite[memAddr].second + 1;
+                    if(Pwrite.find(memAddr) != Pwrite.end()) {
+                        Pwrite[memAddr].first = loc;
+                        Pwrite[memAddr].second = Pwrite[memAddr].second + 1;
+                    }
+                    else {
+                        Pwrite.insert({memAddr, make_pair(loc, 1)});
+                    }    
                 }
             }
             else {
@@ -200,7 +204,6 @@ struct Queue {
                         else {
                             loc = Adj.size();
                             MemToAdj[req.row].push_back(loc);
-                            MemToAdj[req.row][0] = MemToAdj[req.row].size();
                             queue<Request> que;
                             que.push(req);
                             Adj.push_back(que);
@@ -654,7 +657,7 @@ struct REGI {
         cout << "Cycle " << cycle_cnt << ": ";
         if(r1 == 0 && ins_num == 7) {
             cout << "\nInstruction executed: " << instructions[PC / 4] << "\n";
-            //->cout<<PC
+            cout << "Memory Address of Instruction: " << PC << "\n";
             cout << "No DRAM request issued; $zero register!\n";
             cout << "Register modified: " << num_reg[r1] << " = " << reg[r1] << " (0x" << decimalToHexadecimal(reg[r1]) << ")\n\n";
             PC += 4;
@@ -662,8 +665,7 @@ struct REGI {
         }
         cout << "DRAM request issued for Instruction: " << instructions[PC / 4] << "\n";
         cout << "Memory Address of Instruction: " << PC << "\n\n";
-        //-> cout<<PC
-        // add request to Queuexr
+        // add request to Queue
         if(ins_num == 7) {
             Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, 0, r1, "lw", instructions[PC/4],PC};
             q.addRequest(req);
@@ -819,7 +821,7 @@ struct REGI {
         }
         
         q.deleteRequest();
-        // execution completed (both load word and other independent instructions)
+        // execution completed (both load/store word and other independent instructions)
         return true;
     }
 
@@ -879,84 +881,82 @@ struct REGI {
 
             switch (ins_code) {
                 // add
-            case 0:
-                if (inPwrite(q, val1, val2, val3))
-                    // don't do anything, break
+                case 0:
+                    if (inPwrite(q, val1, val2, val3))
+                        // don't do anything, break
+                        break;
+                    flag = add(val1, val2, val3);
+                    if (flag) PC += 4;
+                    else return flag;
                     break;
-                flag = add(val1, val2, val3);
-                if (flag) PC += 4;
-                else return flag;
-                break;
-                // sub
-            case 1:
-                if (inPwrite(q, val1, val2, val3))
-                    // don't do anything, break
+                    // sub
+                case 1:
+                    if (inPwrite(q, val1, val2, val3))
+                        // don't do anything, break
+                        break;
+                    flag = sub(val1, val2, val3);
+                    if (flag) PC += 4;
+                    else return flag;
                     break;
-                flag = sub(val1, val2, val3);
-                if (flag) PC += 4;
-                else return flag;
-                break;
-                // mul
-            case 2:
-                if (inPwrite(q, val1, val2, val3))
-                    // don't do anything, break
+                    // mul
+                case 2:
+                    if (inPwrite(q, val1, val2, val3))
+                        // don't do anything, break
+                        break;
+                    flag = mul(val1, val2, val3);
+                    if (flag) PC += 4;
+                    else return flag;
                     break;
-                flag = mul(val1, val2, val3);
-                if (flag) PC += 4;
-                else return flag;
-                break;
-                // beq
-            case 3:
-                if (inPwrite(q, val1, val2))
-                    // don't do anything, break
+                    // beq
+                case 3:
+                    if (inPwrite(q, val1, val2))
+                        // don't do anything, break
+                        break;
+                    flag = beq(val1, val2, val3);
+                    if (!flag) return flag;
                     break;
-                flag = beq(val1, val2, val3);
-                if (!flag) return flag;
-                break;
-                // bne
-            case 4:
-                if (inPwrite(q, val1, val2))
-                    // don't do anything, break
+                    // bne
+                case 4:
+                    if (inPwrite(q, val1, val2))
+                        // don't do anything, break
+                        break;
+                    flag = bne(val1, val2, val3);
+                    if (!flag) return flag;
                     break;
-                flag = bne(val1, val2, val3);
-                if (!flag) return flag;
-                break;
-                // slt
-            case 5:
-                if (inPwrite(q, val1, val2, val3))
-                    // don't do anything, break
+                    // slt
+                case 5:
+                    if (inPwrite(q, val1, val2, val3))
+                        // don't do anything, break
+                        break;
+                    slt(val1, val2, val3);
+                    PC += 4;
                     break;
-                slt(val1, val2, val3);
-                PC += 4;
-                break;
-                // j
-            case 6:
-                flag = j(val1);
-                if (!flag) return flag;
-                break;
-                // lw, so do not do anything, as we have only one row buffer
-            case 7:
-                if(inPwrite(q, val3))
+                    // j
+                case 6:
+                    flag = j(val1);
+                    if (!flag) return flag;
                     break;
-                flag = raiseRequest(val1, val2, val3, q, 7);
-                if(!flag) return flag;
-                break;
-                // sw, so do not do anything, as we have only one row buffer
-            case 8:
-                if(inPwrite(q, val1, val3))
+                case 7:
+                    if(inPwrite(q, val3))
+                        break;
+                    flag = raiseRequest(val1, val2, val3, q, 7);
+                    if(!flag) return flag;
                     break;
-                flag = raiseRequest(val1, val2, val3, q, 8);
-                if(!flag) return flag;
-                break;
-                // addi                
-            case 9:
-                if (inPwrite(q, val1, val2))
-                    // don't do anything, break
+                case 8:
+                    if(inPwrite(q, val1, val3))
+                        break;
+                    flag = raiseRequest(val1, val2, val3, q, 8);
+                    if(!flag) return flag;
                     break;
-                flag = addi(val1, val2, val3);
-                if (flag) PC += 4;
-                else return flag;
-                break;
+                    // addi                
+                case 9:
+                    if (inPwrite(q, val1, val2))
+                        // don't do anything, break
+                        break;
+                    flag = addi(val1, val2, val3);
+                    if (flag) PC += 4;
+                    else return flag;
+                    break;
             }
         }
 
@@ -1089,9 +1089,9 @@ int main(int argc, char** argv) {
         else {
             ROW_ACCESS_DELAY = stoi(argv[2]);
             COL_ACCESS_DELAY = stoi(argv[3]);
-            if (ROW_ACCESS_DELAY < 0 || COL_ACCESS_DELAY < 0) {
+            if (ROW_ACCESS_DELAY <= 0 || COL_ACCESS_DELAY <= 0) {
                 // invalid delay (negative)
-                cout << "ERROR: DRAM delay is given to be negative. Program terminating!\n";
+                cout << "ERROR: DRAM delay is given to be negative or zero. Program terminating!\n";
                 return 0;
             }
         }
@@ -1116,11 +1116,6 @@ int main(int argc, char** argv) {
         cout << "Program terminating!\n";
         return 0;
     }
-
-    //file_path = "/Users/aparahuja/Desktop/GitHub/COL216_Lab/A4/TestCases/Untested/ErrorsAndWarnings/Warning_ExtaArguments.txt";
-//    ROW_ACCESS_DELAY = 4;
-//    COL_ACCESS_DELAY = 6;
-                      //ROW_ACCESS_DELAY = 10; COL_ACCESS_DELAY = 2;
 
     ifstream infile(file_path);
 
