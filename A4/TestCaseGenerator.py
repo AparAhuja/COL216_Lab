@@ -1,4 +1,4 @@
-no_of_instructions = 20
+no_of_instructions = 1000
 no_of_files = 2
 
 import random
@@ -67,26 +67,31 @@ def makeFile(filex):
     g = open("TestCase" + str(filex) + ".txt", "r")
     list_of_lines = g.readlines()
     i = 0
+    delete = 0
     while(i < len(list_of_lines)):
         if(list_of_lines[i][0] == 'j'):
             flag = True
             for label in labels:
-                if label[1] > i:
+                if label[1] - delete> i:
                     list_of_lines[i] = "j " + label[0] + "\n"
                     flag = False
                     break
             if flag:
                 list_of_lines.pop(i)
+                delete+=1
+                continue
         if(list_of_lines[i][0] == 'b'):
             flag = True
             for label in labels:
-                if label[1] > i:
+                if label[1] - delete > i:
                     temp = list_of_lines[i].strip().split()
                     list_of_lines[i] = temp[0] + " " + temp[1] + " " + temp[2] + " " + label[0] + "\n"
                     flag = False
                     break
             if flag:
                 list_of_lines.pop(i)
+                delete+=1
+                continue
         i+=1
     a_file = open("TestCase" + str(filex) + ".txt", "w")
     a_file.writelines(list_of_lines)
