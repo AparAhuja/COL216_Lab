@@ -30,13 +30,13 @@ def makeFile(filex):
                 continue
             else:
                 label = random.sample(labels, 1)
-                f.write("beq " + r1 + " " + r2 + " " + label[0] + "\n")
+                f.write("beq " + r1 + " " + r2 + " " + label[0][0] + "\n")
         if ins_code == 4:
             if len(labels) == 0:
                 continue
             else:
                 label = random.sample(labels, 1)
-                f.write("bne " + r1 + " " + r2 + " " + label[0] + "\n")
+                f.write("bne " + r1 + " " + r2 + " " + label[0][0] + "\n")
         if ins_code == 5:
             f.write("slt " + r1 + " " + r2 + " " + r3 + "\n")
         if ins_code == 6:
@@ -44,15 +44,15 @@ def makeFile(filex):
                 continue
             else:
                 label = random.sample(labels, 1)
-                f.write("j " + label[0] + "\n")
+                f.write("j " + label[0][0] + "\n")
         if ins_code == 7:
-            addr = str(4*random.randint(0, 87295))
+            addr = str(4*random.randint(0, 8191))
             if random.randint(0,1) == 1 and len(usedMemAddr) != 0:
                 addr = random.sample(usedMemAddr, 1)[0]
             usedMemAddr.add(addr)
             f.write("sw " + r1 + " " + addr + "($zero)\n")
         if ins_code == 8:
-            addr = str(4*random.randint(0, 87295))
+            addr = str(4*random.randint(0, 8191))
             if random.randint(0,1) == 1 and len(usedMemAddr) != 0:
                 addr = random.sample(usedMemAddr, 1)[0]
             usedMemAddr.add(addr)
@@ -60,10 +60,38 @@ def makeFile(filex):
         if ins_code == 9:
             f.write("addi " + r1 + " " + r2 + " " + str(random.randint(-2**15, 2**15 - 1)) + "\n")
         if ins_code == 10:
-            label = "Label" + str(i) + ":\n"
-            f.write(label)
-            labels.add(label)
+            label = "Label" + str(i)
+            f.write(label+ ":\n")
+            labels.add((label,i))
     f.close()
+    g = open("TestCase" + str(filex) + ".txt", "r")
+    list_of_lines = g.readlines()
+    i = 0
+    while(i < len(list_of_lines)):
+        if(list_of_lines[i][0] == 'j'):
+            flag = True
+            for label in labels:
+                if label[1] > i:
+                    list_of_lines[i] = "j " + label[0] + "\n"
+                    flag = False
+                    break
+            if flag:
+                list_of_lines.pop(i)
+        if(list_of_lines[i][0] == 'b'):
+            flag = True
+            for label in labels:
+                if label[1] > i:
+                    temp = list_of_lines[i].strip().split()
+                    list_of_lines[i] = temp[0] + " " + temp[1] + " " + temp[2] + " " + label[0] + "\n"
+                    flag = False
+                    break
+            if flag:
+                list_of_lines.pop(i)
+        i+=1
+    a_file = open("TestCase" + str(filex) + ".txt", "w")
+    a_file.writelines(list_of_lines)
+    a_file.close()
+    g.close()
 
 for i in range(no_of_files):
     makeFile(i+1)
