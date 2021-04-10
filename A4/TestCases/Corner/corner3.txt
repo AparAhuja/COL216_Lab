@@ -1,0 +1,89 @@
+main:
+    addi $t0, $t0, 1000
+    sw $t0, 1000($zero)
+    lw $s0, 1000($zero)
+    lw $s1, 1000($zero)
+    sw $t0, 0($s0)
+    j exit
+
+exit:
+
+______________________________________________
+
+Output:
+
+Cycle 1:
+Instruction executed: addi $t0, $t0, 1000
+Memory Address of Instruction: 0
+Register modified: $t0 = 1000 (0x000003e8)
+
+Cycle 2: DRAM request issued for Instruction: sw $t0, 1000($zero)
+Memory Address of Instruction: 4
+
+DRAM PROCESSING STARTED: Cycle 3: Instruction: sw $t0, 1000($zero)
+Memory Address of Instruction: 4
+
+Cycle 3: DRAM request issued for Instruction: lw $s0, 1000($zero)
+Memory Address of Instruction: 8
+
+Cycle 4: DRAM request issued for Instruction: lw $s1, 1000($zero)
+Memory Address of Instruction: 12
+
+Cycle 3-14: DRAM request completed for Instruction: sw $t0, 1000($zero)
+          Memory Address of Instruction: 4
+          ACTIVATION: Cycle 3-12: Copying from DRAM to ROW BUFFER (Row (Data section): 0-1023)
+          WRITE:      Cycle 13-14: Data updated in ROW BUFFER: Memory Address (Data section): 1000-1003 = 1000 (0x000003e8)
+
+DRAM PROCESSING STARTED: Cycle 15: Instruction: lw $s0, 1000($zero)
+Memory Address of Instruction: 8
+
+Cycle 15-16: DRAM processing for Instruction: lw $s0, 1000($zero): completed.
+          Memory Address of Instruction: 8
+          READ:  Cycle 15-16: Register value updated: $s0 = 1000 (0x000003e8)
+
+DRAM PROCESSING STARTED: Cycle 17: Instruction: lw $s1, 1000($zero)
+Memory Address of Instruction: 12
+
+Cycle 17: DRAM request issued for Instruction: sw $t0, 0($s0)
+Memory Address of Instruction: 16
+
+Cycle 18:
+Instruction executed: j exit
+Memory Address of Instruction: 20
+
+Cycle 17-18: DRAM processing for Instruction: lw $s1, 1000($zero): completed.
+          Memory Address of Instruction: 12
+          READ:  Cycle 17-18: Register value updated: $s1 = 1000 (0x000003e8)
+
+DRAM PROCESSING STARTED: Cycle 19: Instruction: sw $t0, 0($s0)
+Memory Address of Instruction: 16
+
+Cycle 19-20: DRAM processing for Instruction: sw $t0, 0($s0): completed.
+          Memory Address of Instruction: 16
+          WRITE: Cycle 19-20: Data updated in ROW BUFFER: Memory Address (Data section): 1000-1003 = 1000 (0x000003e8)
+
+PROGRAM EXECUTION ENDED.
+Executing pending writeback:
+Cycle 21: DRAM request issued
+Cycle 22-31: WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : 0-1023)
+______________________________________________________________________________________________________
+
+Total clock cycles: 31
+
+Number of instructions executed for each type are given below:-
+add: 0, addi: 1, beq: 0, bne: 0, j: 1
+lw: 2, mul: 0, slt: 0, sub: 0, sw: 2
+
+Memory content at the end of the execution (Data section):
+1000-1003 = 1000 (0x000003e8)
+
+Total ROW BUFFER operations (writeback/activation/read/write): 6
+Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): 1
+Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): 1 (ROW BUFFER update)
+Number of times data was written on ROW BUFFER (WRITE):2 (ROW BUFFER update)
+Number of times data was read from ROW BUFFER (READ):2
+
+______________________________________________________________________________________________________
+
+
+Program executed successfully!
