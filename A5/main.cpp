@@ -29,6 +29,10 @@ int DRAM[1048576];
 
 int no_of_files, simulation_time;
 
+// vector to store memory locations which were used
+vector<int> memoryAddress;
+
+
 // function that converts a decimal number to its corresponding hexadecimal format
 string decimalToHexadecimal(long long a) {
 
@@ -57,7 +61,11 @@ struct Request {
     string type;
     string instruction;
     int PC;
+    int procNum;
 };
+
+
+vector<Request> reqBuffer, manBuffer;
 
 struct Queue {
     map<int, vector<int>> MemToAdj;
@@ -332,6 +340,10 @@ struct Queue {
             }
         }
     }
+    bool inPwrite(int val1, int val2 = -1, int val3 = -1) {
+        string s1 = reverseMap[val1], s2 = reverseMap[val2], s3 = reverseMap[val3];
+        return (Pwrite.find(s1) != Pwrite.end() || Pwrite.find(s2) != Pwrite.end() || Pwrite.find(s3) != Pwrite.end());
+    }
 
 };
 
@@ -365,31 +377,13 @@ struct REGI {
     // vector used to store instructions
     vector<string> instructions;
     bool isWorking = true;
-    // ROW_BUFFER
-    int ROW_BUFFER[1024];
-
-    // start and ending addresses in buffer
-    int start, end;
-
-    // boolean flag to tell if the buffer is empty or not
-    bool isEmpty;
-
-    // register to memory intermediate (store word intermediate value buffer)
-    int data_bus = -1;
-
-    // variables to store number of row_buffer updates
-
-    int writebacks, copies, value_write, value_read;
 
     // register parameters and clock cycle count
     int ins_cnt[10], reg[32];
     int cycle_cnt = 0;
+    int procNum;
+    bool pending;
 
-    // vector to store memory locations which were used
-    vector<int> memoryAddress;
-
-    // boolean to tell whether or not do the final writeback
-    bool doWriteback;
 
     // constructor for initialization
     REGI() {
@@ -402,23 +396,12 @@ struct REGI {
         for (int i = 0; i < 10; i++)
             ins_cnt[i] = 0;
 
-        // initialize row buffer
-        for (int i = 0; i < 1024; i++) {
-            ROW_BUFFER[i] = 0;
-        }
         insMemory = vector<int>(262144, 0);
-        // initially the row buffer is empty
-        isEmpty = true;
-        doWriteback = false;
-        start = -1;
-        end = -1;
-        writebacks = 0;
-        copies = 0;
-        value_write = 0;
-        value_read = 0;
+        // initially the row buffer is empt
         PC = 0;
         PARTITION = 0;
         DATA_START = 0;
+        pending = false;
     }
 
     void execution_stats() {
@@ -434,22 +417,6 @@ struct REGI {
             else cout << ", ";
             j++;
         }
-        int n = memoryAddress.size();
-        if (n != 0) {
-            sort(memoryAddress.begin(), memoryAddress.end());
-            cout << "\nMemory content at the end of the execution (Data section):\n";
-            for (int i = 0; i < n; i++) {
-                cout << memoryAddress[i] << "-" << memoryAddress[i] + 3 << " = " << DRAM[DATA_START + memoryAddress[i]] << " (0x" << decimalToHexadecimal(DRAM[DATA_START + memoryAddress[i]]) << ")\n";
-            }
-        }
-        cout << "\nTotal ROW BUFFER operations (writeback/activation/read/write): " << writebacks + copies + value_write + value_read << "\n";
-        cout << "Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): " << writebacks << "\n";
-        cout << "Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): " << copies << " (ROW BUFFER update)\n";
-        cout << "Number of times data was written on ROW BUFFER (WRITE):" << value_write << " (ROW BUFFER update)\n";
-        cout << "Number of times data was read from ROW BUFFER (READ):" << value_read << "\n\n";
-        cout << "______________________________________________________________________________________________________\n\n";
-
-
     }
 
 
@@ -608,39 +575,42 @@ struct REGI {
     }
 
     // modified function
-    bool lw(int r1, int offset, int r2, Queue &q) {
+    bool lw(int r1, int offset, int r2) {
         bool flag;
 
-        flag = raiseRequest(r1, offset, r2, q, 7);
+        flag = raiseRequest(r1, offset, r2, 7);
+        pending = true;
         if(!flag) return flag;
         
         return flag;
     }
 
     // modified function
-    bool sw(int r1, int offset, int r2, Queue &q) {
+    bool sw(int r1, int offset, int r2) {
         bool flag;
 
-        flag = raiseRequest(r1, offset, r2, q, 8);
+        flag = raiseRequest(r1, offset, r2, 8);
+        pending = true;
         if(!flag) return flag;
 
         return flag;
     }
 
     // new function added
-    bool raiseRequest(int r1, int offset, int r2, Queue &q, int ins_num) {
+    bool raiseRequest(int r1, int offset, int r2, int ins_num) {
         // check if address is valid
         long long addr = (long long)offset + (long long)reg[r2] + (long long)DATA_START;
-        if (addr >= 1048576 || addr < DATA_START) {
+        if (addr >= DATA_END || addr < DATA_START) {
             // invalid address, error
-            cout << "Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
+            cout << addr << " " << DATA_START << " " << DATA_END << " " << procNum << "\n";
+            cout << "Processor " + to_string(procNum) +" raised Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
             execution_stats();
             return false;
         }
         else {
             if (addr % 4 != 0) {
                 // address is not word aligned, error
-                cout << "Error: Memory address is not word-aligned. Invalid load operation. Program Terminating!\n\n";
+                cout << "Processor " + to_string(procNum) +" raised Error: Memory address is not word-aligned. Invalid load operation. Program Terminating!\n\n";
                 execution_stats();
                 return false;
             }
@@ -660,165 +630,20 @@ struct REGI {
         }
         cout << "DRAM request issued for Instruction: " << instructions[PC / 4] << "\n";
         cout << "Memory Address of Instruction: " << PC << "\n\n";
-        // add request to Queue
+        // add request to reqBuffer
         if(ins_num == 7) {
-            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, 0, r1, "lw", instructions[PC/4],PC};
-            q.addRequest(req);
+            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, 0, r1, "lw", instructions[PC/4],PC, procNum};
+            reqBuffer.push_back(req);
         }    
         else {  
-            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, reg[r1], 0, "sw", instructions[PC/4],PC};
-            q.addRequest(req);
+            Request req = {(int)addr - DATA_START, ((int)addr - DATA_START) / 1024, reg[r1], 0, "sw", instructions[PC/4],PC, procNum};
+            reqBuffer.push_back(req);
         }
         // increment PC by 4
         PC += 4;
         return true;     
     }
 
-    // modified function
-   bool NonBlockLW(Queue &q) {
-        // boolean flag used to detect any errors
-        bool flag = true;
-        int count = 0;
-        int temp = cycle_cnt;
-
-        Request req = q.getRequest();
-        int row_start = req.row * 1024 + DATA_START;
-        int row_end = row_start + 1023;
-        int addr = req.addr;
-        int src = req.destination;
-        int data = req.data_bus;
-        string type = req.type;
-        int cycle_start = cycle_cnt, cycle_end;
-        vector<int>::iterator iter = find(memoryAddress.begin(), memoryAddress.end(), addr);
-        if (iter == memoryAddress.end()) {
-            memoryAddress.push_back(addr);
-        }    
-       
-        cout << "DRAM PROCESSING STARTED: Cycle " << cycle_start + 1 << ": Instruction: " << req.instruction << "\n";
-        //-> cout<<PC
-       cout << "Memory Address of Instruction: " << req.PC << "\n\n";
-        // check if the current buffer row is different from current row or not
-        if (start == row_start) {
-            if(type == "lw") {value_read++;}
-            if(type == "sw") {value_write++; doWriteback = true;}
-            //row buffer is the same, so no loading required
-            while (count < COL_ACCESS_DELAY) {
-                if(MODE)
-                    flag = executeIndependent(q);
-
-                if (temp == cycle_cnt) {
-                    cycle_cnt++;
-                    temp++;
-                }
-                else {
-                    temp = cycle_cnt;
-                }
-                if (!flag) return flag;
-                count++;
-            }
-            cycle_end = cycle_start + COL_ACCESS_DELAY;
-            cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM processing for Instruction: " << req.instruction << ": completed.\n";
-            //->cout<<PC
-            cout << "\t  Memory Address of Instruction: " << req.PC << "\n";
-            if(type == "lw") {
-                reg[src] = (src==0) ? 0 : ROW_BUFFER[addr + DATA_START - row_start];
-                cout << "\t  READ:  Cycle " << cycle_start + 1 << "-" << cycle_end << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr + DATA_START - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr + DATA_START - row_start]) << ")\n\n";
-            }
-            if(type == "sw") {
-                ROW_BUFFER[addr + DATA_START - row_start] = data;
-                cout << "\t  WRITE: Cycle " << cycle_start + 1 << "-" << cycle_end << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
-            }
-        }
-       
-        else {
-            // row buffer is different, so write it back to memory
-            // will take ROW_ACCESS_DELAY cycles
-            if(!isEmpty){
-                for (int i = 0; i < 1024; i++) {
-                    DRAM[start + i] = ROW_BUFFER[i];
-                }
-                while (count < ROW_ACCESS_DELAY) {
-                    if(MODE)
-                        flag = executeIndependent(q);
-
-                    if (temp == cycle_cnt) {
-                        cycle_cnt++;
-                        temp++;
-                    }
-                    else {
-                        temp = cycle_cnt;
-                    }
-                    if (!flag) return flag;
-                    count++;
-                }
-                writebacks++;
-            }
-            // now load the new row
-            loadBuffer(row_start, row_end);
-            copies++;
-            if(type == "lw") {value_read++; doWriteback = false;}
-            if(type == "sw") {value_write++; doWriteback = true;}
-            
-            int temp_start = start, temp_end = end;
-
-            // update start and end values
-            start = row_start;
-            end = row_end;
-            
-            // execute independent instructions
-            count = 0;
-            while (count < ROW_ACCESS_DELAY) {
-                if(MODE)
-                    flag = executeIndependent(q);
-
-                if (temp == cycle_cnt) {
-                    cycle_cnt++;
-                    temp++;
-                }
-                else {
-                    temp = cycle_cnt;
-                }
-                if (!flag) return flag;
-                count++;
-            }
-            count = 0;
-            // update register value
-            while (count < COL_ACCESS_DELAY) {
-                if(MODE)
-                    flag = executeIndependent(q);
-
-                if (temp == cycle_cnt) {
-                    cycle_cnt++;
-                    temp++;
-                }
-                else {
-                    temp = cycle_cnt;
-                }
-                if (!flag) return flag;
-                count++;
-            }
-            cycle_start = cycle_start + (1 - isEmpty) * ROW_ACCESS_DELAY;
-            cycle_end = cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY;
-            cout<<"Cycle "<<cycle_start - (1 - isEmpty) * ROW_ACCESS_DELAY + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
-            //->Cout<<PC
-            cout << "\t  Memory Address of Instruction: " << req.PC << "\n";
-            if(!isEmpty) {cout << "\t  WRITEBACK:  Cycle " << cycle_start - ROW_ACCESS_DELAY + 1 << "-" << cycle_start << ":" << " Copying from ROW BUFFER to DRAM (Row (Data section): " << temp_start - DATA_START << "-" << temp_end - DATA_START << ")\n";}
-            cout << "\t  ACTIVATION: Cycle " << cycle_start + 1 << "-" << cycle_start + ROW_ACCESS_DELAY << ":" << " Copying from DRAM to ROW BUFFER (Row (Data section): " << row_start - DATA_START << "-" << row_end - DATA_START << ")\n";
-            if(type == "lw") {
-                reg[src] = (src == 0) ? 0 : ROW_BUFFER[addr + DATA_START - row_start];
-                cout << "\t  READ:       Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr + DATA_START - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr + DATA_START - row_start]) << ")\n\n";
-            }
-            if(type == "sw") {
-                ROW_BUFFER[addr + DATA_START - row_start] = data;
-                cout << "\t  WRITE:      Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
-            }
-            isEmpty = false;
-        }
-        
-        q.deleteRequest();
-        // execution completed (both load/store word and other independent instructions)
-        return true;
-    }
 
 
     bool addi(int dest, int src, int adds) {
@@ -847,132 +672,9 @@ struct REGI {
     }
 
     void stat_update(int ins_code) {
-        cycle_cnt++;
         ins_cnt[ins_code]++;
     }
 
-    // new function added
-    bool inPwrite(Queue &q, int val1, int val2 = -1, int val3 = -1) {
-        string s1 = num_reg[val1], s2 = num_reg[val2], s3 = num_reg[val3];
-        return (q.Pwrite.find(s1) != q.Pwrite.end() || q.Pwrite.find(s2) != q.Pwrite.end() || q.Pwrite.find(s3) != q.Pwrite.end());
-    }
-
-    void loadBuffer(int row_start, int row_end) {
-        // load memory row into buffer
-        for (int i = 0; i < 1024; i++) {
-            ROW_BUFFER[i] = DRAM[row_start + i];
-        }
-    }
-
-    // modified function
-    bool executeIndependent(Queue &q) {
-        int ins_code;
-        bool flag;
-
-        // check if PC is less than partition
-        if (PC < PARTITION && PC >= 0) {
-            ins_code = DRAM[PC];
-            int val1 = DRAM[PC + 1], val2 = DRAM[PC + 2], val3 = DRAM[PC + 3];
-
-            switch (ins_code) {
-                // add
-                case 0:
-                    if (inPwrite(q, val1, val2, val3))
-                        // don't do anything, break
-                        break;
-                    flag = add(val1, val2, val3);
-                    if (flag) PC += 4;
-                    else return flag;
-                    break;
-                    // sub
-                case 1:
-                    if (inPwrite(q, val1, val2, val3))
-                        // don't do anything, break
-                        break;
-                    flag = sub(val1, val2, val3);
-                    if (flag) PC += 4;
-                    else return flag;
-                    break;
-                    // mul
-                case 2:
-                    if (inPwrite(q, val1, val2, val3))
-                        // don't do anything, break
-                        break;
-                    flag = mul(val1, val2, val3);
-                    if (flag) PC += 4;
-                    else return flag;
-                    break;
-                    // beq
-                case 3:
-                    if (inPwrite(q, val1, val2))
-                        // don't do anything, break
-                        break;
-                    flag = beq(val1, val2, val3);
-                    if (!flag) return flag;
-                    break;
-                    // bne
-                case 4:
-                    if (inPwrite(q, val1, val2))
-                        // don't do anything, break
-                        break;
-                    flag = bne(val1, val2, val3);
-                    if (!flag) return flag;
-                    break;
-                    // slt
-                case 5:
-                    if (inPwrite(q, val1, val2, val3))
-                        // don't do anything, break
-                        break;
-                    slt(val1, val2, val3);
-                    PC += 4;
-                    break;
-                    // j
-                case 6:
-                    flag = j(val1);
-                    if (!flag) return flag;
-                    break;
-                case 7:
-                    if(inPwrite(q, val3))
-                        break;
-                    flag = raiseRequest(val1, val2, val3, q, 7);
-                    if(!flag) return flag;
-                    break;
-                case 8:
-                    if(inPwrite(q, val1, val3))
-                        break;
-                    flag = raiseRequest(val1, val2, val3, q, 8);
-                    if(!flag) return flag;
-                    break;
-                    // addi                
-                case 9:
-                    if (inPwrite(q, val1, val2))
-                        // don't do anything, break
-                        break;
-                    flag = addi(val1, val2, val3);
-                    if (flag) PC += 4;
-                    else return flag;
-                    break;
-            }
-        }
-
-        // instruction executed successfully
-        return true;
-    }
-
-    // modified function
-    void buffer() {
-        cout << "PROGRAM EXECUTION ENDED.\n";
-        if (!isEmpty && doWriteback) {
-            writebacks++;
-            for (int i = 0; i < 1024; i++) {
-                DRAM[start + i] = ROW_BUFFER[i];
-            }
-            cout << "Executing pending writeback:\n";
-            cout << "Cycle " << cycle_cnt + 1 << ": DRAM request issued\n";
-            cout << "Cycle " << cycle_cnt + 2 << "-" << cycle_cnt + ROW_ACCESS_DELAY + 1 << ":" << " WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : " << start - DATA_START << "-" << end - DATA_START << ")\n";
-            cycle_cnt = cycle_cnt + ROW_ACCESS_DELAY + 1;
-        }
-    }
 };
 
 #include "OldFunctions.h"
@@ -980,92 +682,316 @@ struct REGI {
 bool checkPC(vector<REGI> &rf){
     bool flag = false;
     for(int i = 0; i < no_of_files; i++){
-        if(rf[i].PC < rf[i].PARTITION && rf[i].PC >= 0){flag = true;}
+        if((rf[i].PC < rf[i].PARTITION && rf[i].PC >= 0) || rf[i].pending){flag = true;}
         else{rf[i].isWorking = false;}
     }
     return flag;
 }
+
+int delay(int size) {
+    return 1;
+}
+
+// bool NonBlockLW(Queue &q, vector<REGI> &rf) {
+    
+    
+   
+//    //  cout << "DRAM PROCESSING STARTED: Cycle " << cycle_start + 1 << ": Instruction: " << req.instruction << "\n";
+//    //  //-> cout<<PC
+//    // cout << "Memory Address of Instruction: " << req.PC << "\n\n";
+   
+
+//     // check if the current buffer row is different from current row or not
+//     if (start == row_start) {
+//         if(type == "lw") {value_read++;}
+//         if(type == "sw") {value_write++; doWriteback = true;}
+//         cout<<"Cycle "<<cycle_start + 1 << "-" << cycle_end << ":" <<" DRAM processing for Instruction: " << req.instruction << ": completed.\n";
+//         //->cout<<PC
+//         cout << "\t  Memory Address of Instruction: " << req.PC << "\n";
+//         if(type == "lw") {
+//             reg[src] = (src==0) ? 0 : ROW_BUFFER[addr + DATA_START - row_start];
+//             cout << "\t  READ:  Cycle " << cycle_start + 1 << "-" << cycle_end << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr + DATA_START - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr + DATA_START - row_start]) << ")\n\n";
+//         }
+//         if(type == "sw") {
+//             ROW_BUFFER[addr + DATA_START - row_start] = data;
+//             cout << "\t  WRITE: Cycle " << cycle_start + 1 << "-" << cycle_end << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
+//         }
+//     }
+   
+//     else {
+    
+
+//         cycle_start = cycle_start + (1 - isEmpty) * ROW_ACCESS_DELAY;
+//         cycle_end = cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY;
+//         cout<<"Cycle "<<cycle_start - (1 - isEmpty) * ROW_ACCESS_DELAY + 1 << "-" << cycle_end << ":" <<" DRAM request completed for Instruction: " << req.instruction << "\n";
+//         //->Cout<<PC
+//         cout << "\t  Memory Address of Instruction: " << req.PC << "\n";
+//         if(!isEmpty) {cout << "\t  WRITEBACK:  Cycle " << cycle_start - ROW_ACCESS_DELAY + 1 << "-" << cycle_start << ":" << " Copying from ROW BUFFER to DRAM (Row (Data section): " << temp_start - DATA_START << "-" << temp_end - DATA_START << ")\n";}
+//         cout << "\t  ACTIVATION: Cycle " << cycle_start + 1 << "-" << cycle_start + ROW_ACCESS_DELAY << ":" << " Copying from DRAM to ROW BUFFER (Row (Data section): " << row_start - DATA_START << "-" << row_end - DATA_START << ")\n";
+//         if(type == "lw") {
+//             reg[src] = (src == 0) ? 0 : ROW_BUFFER[addr + DATA_START - row_start];
+//             cout << "\t  READ:       Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Register value updated: " << num_reg[src] << " = " << ROW_BUFFER[addr + DATA_START - row_start] << " (0x" << decimalToHexadecimal(ROW_BUFFER[addr + DATA_START - row_start]) << ")\n\n";
+//         }
+//         if(type == "sw") {
+//             ROW_BUFFER[addr + DATA_START - row_start] = data;
+//             cout << "\t  WRITE:      Cycle " << cycle_start + ROW_ACCESS_DELAY + 1 << "-" << cycle_start + ROW_ACCESS_DELAY + COL_ACCESS_DELAY << ":" << " Data updated in ROW BUFFER: Memory Address (Data section): " << addr << "-" << addr + 3 << " = " << data << " (0x" << decimalToHexadecimal(data) << ")\n\n";
+//         }
+//         isEmpty = false;
+//     }
+    
+//     q.deleteRequest();
+//     // execution completed (both load/store word and other independent instructions)
+//     return true;
+// }
+
+
+
 // this function simulates the execution of MIPS program
 // modified function
 bool simulator(vector<REGI> &rf, Queue &q) {
 
     int ins_code;
     bool flag;
+    int val1, val2, val3;
 
+    int cycle = 0;
+    bool manIsIdle = true;
+    bool dramIsIdle = true;
+    int completionCycleMan = 0;
+    int completionCycleDRAM = 0;
+    Request req;
+    int row_start, row_end, addr, src, data, i;
+    int start = -1, end = -1;
+    bool isEmpty = true, doWriteback = false;
+    int data_bus = -1;
+    int writebacks, copies, value_write, value_read;
+    writebacks = copies = value_write = value_read = 0;
+    int ROW_BUFFER[1024];
+    string type;
     // while program counter is less than PARTITION
     while (checkPC(rf)) {
+        cycle ++;
+        if(dramIsIdle) {
+            if(!q.isEmpty()) {
+                req = q.getRequest();
+                i = req.procNum - 1;
+                row_start = req.row * 1024 + rf[i].DATA_START;
+                row_end = row_start + 1023;
+                addr = req.addr;
+                src = req.destination;  // lw
+                data = req.data_bus;    // sw
+                type = req.type;
+                if(type == "sw")
+                    value_write++;
+                else if(type == "lw")
+                    value_read++;
+
+                if(start == row_start) {
+                    if(type == "sw")
+                        doWriteback = true;
+                    completionCycleDRAM = cycle + COL_ACCESS_DELAY - 1;
+                }
+                else {
+                    if(type == "sw") {
+                        doWriteback = true;
+                    }
+                    else {
+                        doWriteback = false;
+                    }
+                    if(isEmpty) 
+                        completionCycleDRAM = cycle + ROW_ACCESS_DELAY + COL_ACCESS_DELAY - 1;
+                    else {
+                        completionCycleDRAM = cycle + 2 * ROW_ACCESS_DELAY + COL_ACCESS_DELAY - 1;
+                        for(int i = 0; i < 1024; i ++) {
+                            DRAM[start + i] = ROW_BUFFER[i];
+                        }
+                        writebacks++;
+                    }
+                    for (int i = 0; i < 1024; i++) {
+                        ROW_BUFFER[i] = DRAM[row_start + i];
+                    }
+                    copies++;
+                }  
+                start = row_start;
+                end = row_end;
+                isEmpty = false; 
+                vector<int>::iterator iter = find(memoryAddress.begin(), memoryAddress.end(), addr);
+                if (iter == memoryAddress.end()) {
+                    memoryAddress.push_back(addr + rf[i].DATA_START);
+                }                             
+                dramIsIdle = false;
+
+            }
+            else {
+                completionCycleDRAM = 0;
+            }
+        }
+        else {
+            if(cycle == completionCycleDRAM) {
+                if(type == "sw") {
+                     ROW_BUFFER[addr + rf[i].DATA_START - row_start] = data;
+                }
+                else {
+                    rf[i].reg[src] = (src == 0) ? 0 : ROW_BUFFER[addr + rf[i].DATA_START - row_start];
+                }
+                q.deleteRequest();
+                rf[i].pending = false;
+                dramIsIdle = true;
+                completionCycleDRAM = 0;
+            }
+        }
+
+        if(manIsIdle) {
+            if(!manBuffer.empty()) {
+                manIsIdle = false;
+                completionCycleMan = cycle + delay(manBuffer.size());
+            }
+            else {
+                for(int i = 0; i < reqBuffer.size(); i ++) {
+                    manBuffer.push_back(reqBuffer[i]);
+                }
+                reqBuffer.clear();
+            }
+        }
+        else {
+            if(cycle == completionCycleMan) {
+                for(int i = 0; i < manBuffer.size(); i ++) {
+                    q.addRequest(manBuffer[i]);
+                }
+                manIsIdle = true;
+                manBuffer.clear();
+                completionCycleMan = 0;
+            }
+        }
+
         for(int i = 0; i < no_of_files; i++){
             if(!rf[i].isWorking){continue;}
             // get instruction code
+            if(rf[i].PC >= rf[i].PARTITION) {rf[i].cycle_cnt ++; continue;}
             ins_code = rf[i].insMemory[rf[i].PC];
+            val1 = rf[i].insMemory[rf[i].PC + 1]; val2 = rf[i].insMemory[rf[i].PC + 2]; val3 = rf[i].insMemory[rf[i].PC + 3];
             switch (ins_code) {
                 // add
                 case 0:
-                    flag = rf[i].add(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3]);
+                    if (q.inPwrite(val1, val2, val3)) {
+                        // don't do anything, break
+                        break;
+                    }    
+                    flag = rf[i].add(val1, val2, val3);
                     if (flag) rf[i].PC += 4;
-                    else rf[i].isWorking = false;
+                    else rf[i].isWorking = flag;
                     break;
                     // sub
                 case 1:
-                    flag = rf[i].sub(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3]);
+                    if (q.inPwrite(val1, val2, val3)) {
+                        // don't do anything, break
+                        break;
+                    } 
+                    flag = rf[i].sub(val1, val2, val3);
                     if (flag) rf[i].PC += 4;
-                    else rf[i].isWorking = false;
+                    else rf[i].isWorking = flag;
                     break;
                     // mul
                 case 2:
-                    flag = rf[i].mul(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3]);
+                    if (q.inPwrite(val1, val2, val3)) {
+                        // don't do anything, break
+                        break;
+                    } 
+                    flag = rf[i].mul(val1, val2, val3);
                     if (flag) rf[i].PC += 4;
-                    else rf[i].isWorking = false;
+                    else rf[i].isWorking = flag;
                     break;
                     // beq
                 case 3:
-                    flag = rf[i].beq(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3]);
-                    if (!flag) rf[i].isWorking = false;
+                    if (q.inPwrite(val1, val2)) {
+                        // don't do anything, break
+                        break;
+                    } 
+                    flag = rf[i].beq(val1, val2, val3);
+                    if (!flag) rf[i].isWorking = flag;
                     break;
                     // bne
                 case 4:
-                    flag = rf[i].bne(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3]);
-                    if (!flag) rf[i].isWorking = false;
+                    if (q.inPwrite(val1, val2)) {
+                        // don't do anything, break
+                        break;
+                    } 
+                    flag = rf[i].bne(val1, val2, val3);
+                    if (!flag) rf[i].isWorking = flag;
                     break;
                     // slt
                 case 5:
-                    rf[i].slt(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3]);
+                    if (q.inPwrite(val1, val2, val3)) {
+                        // don't do anything, break
+                        break;
+                    } 
+                    rf[i].slt(val1, val2, val3);
                     rf[i].PC += 4;
                     break;
                     // j
                 case 6:
-                    flag = rf[i].j(rf[i].insMemory[rf[i].PC + 1]);
-                    if (!flag) rf[i].isWorking = false;
+                    flag = rf[i].j(val1);
+                    if (!flag) rf[i].isWorking = flag;
                     break;
-                    // lw
                 case 7:
-                    flag = rf[i].lw(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3], q);
-                    if (!flag) rf[i].isWorking = false;
+                    if (q.inPwrite(val3)) {
+                        // don't do anything, break
+                        break;
+                    } 
+                    flag = rf[i].lw(val1, val2, val3);
+                    if(!flag) rf[i].isWorking = flag;
                     break;
-                    // sw
                 case 8:
-                    flag = rf[i].sw(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3], q);
-                    if (!flag) rf[i].isWorking = false;
+                    if (q.inPwrite(val1, val3)) {
+                        // don't do anything, break
+                        break;
+                    } 
+                    flag = rf[i].sw(val1, val2, val3);
+                    if(!flag) rf[i].isWorking = flag;
                     break;
-                    // addi
+                    // addi                
                 case 9:
-                    flag = rf[i].addi(rf[i].insMemory[rf[i].PC + 1], rf[i].insMemory[rf[i].PC + 2], rf[i].insMemory[rf[i].PC + 3]);
+                    if (q.inPwrite(val1, val2)) {
+                        // don't do anything, break
+                        break;
+                    } 
+                    flag = rf[i].addi(val1, val2, val3);
                     if (flag) rf[i].PC += 4;
-                    else rf[i].isWorking = false;
+                    else rf[i].isWorking = flag;
                     break;
             }
-            while(!q.isEmpty()) {
-                flag = rf[i].NonBlockLW(q);
-                if(!flag) rf[i].isWorking = false;
-            }
+            rf[i].cycle_cnt ++;
         }
     }
-    for(int i = 0; i < no_of_files; i++){
-        if(!rf[i].isWorking){continue;}
-        // PC = PARTITION, so execution is complete (successful)
-        rf[i].buffer();
+    cout << "PROGRAM EXECUTION ENDED.\n";
+    if (!isEmpty && doWriteback) {
+        writebacks++;
+        for (int i = 0; i < 1024; i++) {
+            DRAM[start + i] = ROW_BUFFER[i];
+        }
+        cout << "Executing pending writeback:\n";
+        cout << "Cycle " << cycle + 1 << ": DRAM request issued\n";
+        cout << "Cycle " << cycle + 2 << "-" << cycle + ROW_ACCESS_DELAY + 1 << ":" << " WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : " << start << "-" << end << ")\n";
+        cycle = cycle + ROW_ACCESS_DELAY + 1;
+    }
+    for(int i = 0; i < no_of_files; i ++) {
+        cout << "Processor " << i + 1 << "\n";
         rf[i].execution_stats();
     }
+    int n = memoryAddress.size();
+    if (n != 0) {
+        sort(memoryAddress.begin(), memoryAddress.end());
+        cout << "\nMemory content at the end of the execution (Data section):\n";
+        for (int i = 0; i < n; i++) {
+            cout << memoryAddress[i] << "-" << memoryAddress[i] + 3 << " = " << DRAM[memoryAddress[i]] << " (0x" << decimalToHexadecimal(DRAM[memoryAddress[i]]) << ")\n";
+        }
+    }
+    cout << "\nTotal ROW BUFFER operations (writeback/activation/read/write): " << writebacks + copies + value_write + value_read << "\n";
+    cout << "Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): " << writebacks << "\n";
+    cout << "Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): " << copies << " (ROW BUFFER update)\n";
+    cout << "Number of times data was written on ROW BUFFER (WRITE):" << value_write << " (ROW BUFFER update)\n";
+    cout << "Number of times data was read from ROW BUFFER (READ):" << value_read << "\n\n";
+    cout << "______________________________________________________________________________________________________\n\n";
     return true;
 }
 
@@ -1114,6 +1040,7 @@ int main(int argc, char** argv) {
             rf[i].isWorking = false;
             cout << "PROCESSOR "+to_string(i+1)+" raised ERROR: Unable to open file t" + to_string(i+1)+".txt.!\n";
         }
+        rf[i].procNum = i + 1;
     }
     
     // create DRAM queue
@@ -1128,8 +1055,8 @@ int main(int argc, char** argv) {
     for(int i = 0; i < no_of_files; i++){
         if(!rf[i].isWorking){continue;}
         line_number = 1;
-        rf[i].DATA_START = i*(1024/no_of_files);
-        rf[i].DATA_END = (i+1)*(1024/no_of_files);
+        rf[i].DATA_START = i*(1024/no_of_files) * 1024;
+        rf[i].DATA_END = (i+1)*(1024/no_of_files) * 1024;
         //read file, line by line
         while (getline(infile[i], line)) {
             if(rf[i].PC > 262143){
