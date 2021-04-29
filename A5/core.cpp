@@ -77,7 +77,7 @@ struct Core {
     bool isFull;                  // control signal that tells whether the buffer is full or not
     bool isWorking;               // control signal that tells whether the core is working or not
 
-    int insMem[524288];           // instruction memory available to core, 2^19 bytes (2^17 instructions)
+    int insMemory[524288];           // instruction memory available to core, 2^19 bytes (2^17 instructions)
     int PARTITION;                // instructions are stored from address 0 to PARTITION - 1
     int DATA_START, DATA_END;     // starting and ending address of the DRAM allocated to the core
     int regPendingWrite[32];      // stores the number of pending writes on the register file
@@ -92,7 +92,7 @@ struct Core {
     
     // maps used to do the linking
     map<string, int> labels;
-    map<string, pair<int, int>> label;
+    vector<pair<string, pair<int, int>>> label;
 
     // maps used to do the printing, output of program
     map<string, int> ins_map = { {"add", 0}, {"sub", 1}, {"mul", 2},{"beq", 3},{"bne", 4},{"slt", 5},{"j", 6},{"lw", 7},{"sw", 8},{"addi", 9} };
@@ -109,13 +109,13 @@ struct Core {
     Core();
     void execution_stats();
     void stat_update(int insNum);
-    void optimise();
+    //void optimise();
     bool addRequest(int r1, int offset, int r2, int insNum);
     void deleteRequest();
     bool add(int r1, int r2, int r3);
     bool sub(int r1, int r2, int r3);
     bool mul(int r1, int r2, int r3);
-    bool slt(int r1, int r2, int r3);
+    void slt(int r1, int r2, int r3);
     bool addi(int r1, int r2, int immediate);
     bool beq(int r1, int r2,  int offset);
     bool bne(int r1, int r2, int offset);
@@ -142,7 +142,7 @@ Core::Core() {
         reg[i] = 0;
     }    
     for(int i = 0; i < 524288; i ++) {
-        insMem[i] = 0;
+        insMemory[i] = 0;
     }
     for(int i = 0; i < 32; i ++) {
         regPendingWrite[i] = 0;
@@ -157,14 +157,14 @@ Core::Core() {
 
 void Core::execution_stats() {
     // print execution statistics
-    cout << "______________________________________________________________________________________________________\n\n";
-    cout << "Total clock cycles: " << cycle_cnt << "\n\n";
-    cout << "Number of instructions executed for each type are given below:-\n";
+    std::cout << "______________________________________________________________________________________________________\n\n";
+    std::cout << "Total clock cycles: " << cycleCount << "\n\n";
+    std::cout << "Number of instructions executed for each type are given below:-\n";
     int j = 1;
     for (auto i = ins_map.begin(); i != ins_map.end(); i++) {
-        cout << (i->first) << ": " << ins_cnt[(i->second)];
-        if (j % 5 == 0) cout << "\n";
-        else cout << ", ";
+        std::cout << (i->first) << ": " << insCount[(i->second)];
+        if (j % 5 == 0) std::cout << "\n";
+        else std::cout << ", ";
         j++;
     }
 }
@@ -178,10 +178,10 @@ bool Core::add(int dest, int src1, int src2) {
     stat_update(0);
 
     if (sum > 2147483647 || sum < -2147483648) {
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
         return false;
     }
     else {
@@ -189,10 +189,10 @@ bool Core::add(int dest, int src1, int src2) {
         // check if it is the zero register
         if (dest == 0)
             reg[dest] = 0;
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
 
         return true;
     }
@@ -203,10 +203,10 @@ bool Core::sub(int dest, int src1, int src2) {
     stat_update(1);
 
     if (diff > 2147483647 || diff < -2147483648) {
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
         return false;
     }
     else {
@@ -214,10 +214,10 @@ bool Core::sub(int dest, int src1, int src2) {
         // check if it is the zero register
         if (dest == 0)
             reg[dest] = 0;
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
 
         return true;
     }
@@ -228,10 +228,10 @@ bool Core::mul(int dest, int src1, int src2) {
     stat_update(2);
 
     if (prod > 2147483647 || prod < -2147483648) {
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
         return false;
     }
     else {
@@ -239,10 +239,10 @@ bool Core::mul(int dest, int src1, int src2) {
         // check if it is the zero register
         if (dest == 0)
             reg[dest] = 0;
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
 
         return true;
     }
@@ -254,17 +254,17 @@ bool Core::beq(int src1, int src2, int jumpto) {
     if (reg[src1] == reg[src2]) {
         PC = jumpto;
         if (PC > PARTITION || PC < 0) {
-            cout << "Cycle " << cycleCount << ":\n";
-            cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-            cout << "Memory Address of Instruction: " << temp << "\n";
-            cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
+            std::cout << "Cycle " << cycleCount << ":\n";
+            std::cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+            std::cout << "Memory Address of Instruction: " << temp << "\n";
+            std::cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
             return false;
         }
     }
     else PC += 4;
-    cout << "Cycle " << cycleCount << ":\n";
-    cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-    cout << "Memory Address of Instruction: " << temp << "\n\n";
+    std::cout << "Cycle " << cycleCount << ":\n";
+    std::cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+    std::cout << "Memory Address of Instruction: " << temp << "\n\n";
     return true;
 }
 
@@ -274,30 +274,30 @@ bool Core::bne(int src1, int src2, int jumpto) {
     if (reg[src1] != reg[src2]) {
         PC = jumpto;
         if (PC > PARTITION || PC < 0) {
-            cout << "Cycle " << cycleCount << ":\n";
-            cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-            cout << "Memory Address of Instruction: " << temp << "\n";
-            cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
+            std::cout << "Cycle " << cycleCount << ":\n";
+            std::cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+            std::cout << "Memory Address of Instruction: " << temp << "\n";
+            std::cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
             return false;
         }
     }
     else PC += 4;
-    cout << "Cycle " << cycleCount << ":\n";
-    cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-    cout << "Memory Address of Instruction: " << temp << "\n\n";
+    std::cout << "Cycle " << cycleCount << ":\n";
+    std::cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+    std::cout << "Memory Address of Instruction: " << temp << "\n\n";
     return true;
 }
 
-bool Core::slt(int dest, int src1, int src2) {
+void Core::slt(int dest, int src1, int src2) {
     reg[dest] = (reg[src1] < reg[src2]) ? 1 : 0;
     // check if it is the zero register
     if (dest == 0)
         reg[dest] = 0;
     stat_update(5);
-    cout << "Cycle " << cycleCount << ":\n";
-    cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-    cout << "Memory Address of Instruction: " << PC << "\n";
-    cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
+    std::cout << "Cycle " << cycleCount << ":\n";
+    std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+    std::cout << "Memory Address of Instruction: " << PC << "\n";
+    std::cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
 }
 
 bool Core::j(int jumpAddr) {
@@ -305,16 +305,16 @@ bool Core::j(int jumpAddr) {
     PC = jumpAddr;
     stat_update(6);
     if (PC > PARTITION) {
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-        cout << "Memory Address of Instruction: " << temp << "\n";
-        cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << temp << "\n";
+        std::cout << "Warning: Program jumped to a non-instruction memory location. Executing pending DRAM requests (if any).\n\n";
         return false;
     }
     else {
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[temp / 4] << "\n";
-        cout << "Memory Address of Instruction: " << temp << "\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[temp / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << temp << "\n\n";
         return true;
     }
 }
@@ -322,8 +322,8 @@ bool Core::j(int jumpAddr) {
 bool Core::lw(int r1, int offset, int r2) {
     bool flag;
 
-    flag = raiseRequest(r1, offset, r2, 7);
-    pending = true;
+    flag = addRequest(r1, offset, r2, 7);
+    regPendingWrite[r1] ++;
 
     return flag;
 }
@@ -331,8 +331,7 @@ bool Core::lw(int r1, int offset, int r2) {
 bool Core::sw(int r1, int offset, int r2) {
     bool flag;
 
-    flag = raiseRequest(r1, offset, r2, 8);
-    pending = true;
+    flag = addRequest(r1, offset, r2, 8);
 
     return flag;
 }
@@ -342,10 +341,10 @@ bool Core::addi(int dest, int src, int adds) {
     stat_update(9);
 
     if (sum > 2147483647 || sum < -2147483648) {
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "Error: Arithmetic Overflow. Program terminating!\n\n";
         return false;
     }
     else {
@@ -353,10 +352,10 @@ bool Core::addi(int dest, int src, int adds) {
         // check if it is the zero register
         if (dest == 0)
             reg[dest] = 0;
-        cout << "Cycle " << cycleCount << ":\n";
-        cout << "Instruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
+        std::cout << "Cycle " << cycleCount << ":\n";
+        std::cout << "Instruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "Register modified: " << num_reg[dest] << " = " << reg[dest] << " (0x" << decimalToHexadecimal(reg[dest]) << ")\n\n";
         return true;
     }
 }
@@ -366,13 +365,13 @@ bool Core::addRequest(int r1, int offset, int r2, int ins_num) {
     long long addr = (long long)offset + (long long)reg[r2] + (long long)DATA_START;
     if (addr >= DATA_END || addr < DATA_START) {
         // invalid address, error
-        cout << "Core " + to_string(coreNum) +" raised Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
+        std::cout << "Core " + to_string(coreNum) +" raised Error: Program is trying to access an unavailable memory location. Program terminating!\n\n";
         return false;
     }
     else {
         if (addr % 4 != 0) {
             // address is not word aligned, error
-            cout << "Core " + to_string(coreNum) +" raised Error: Memory address is not word-aligned. Invalid load operation. Program Terminating!\n\n";
+            std::cout << "Core " + to_string(coreNum) +" raised Error: Memory address is not word-aligned. Invalid load operation. Program Terminating!\n\n";
             return false;
         }
     }
@@ -380,17 +379,17 @@ bool Core::addRequest(int r1, int offset, int r2, int ins_num) {
     
     // update cycle count and instruction stats, request issued to DRAM
     stat_update(ins_num);
-    cout << "Cycle " << cycleCount << ": ";
+    std::cout << "Cycle " << cycleCount << ": ";
     if(r1 == 0 && ins_num == 7) {
-        cout << "\nInstruction executed: " << instructions[PC / 4] << "\n";
-        cout << "Memory Address of Instruction: " << PC << "\n";
-        cout << "No DRAM request issued; $zero register!\n";
-        cout << "Register modified: " << num_reg[r1] << " = " << reg[r1] << " (0x" << decimalToHexadecimal(reg[r1]) << ")\n\n";
+        std::cout << "\nInstruction executed: " << instructions[PC / 4] << "\n";
+        std::cout << "Memory Address of Instruction: " << PC << "\n";
+        std::cout << "No DRAM request issued; $zero register!\n";
+        std::cout << "Register modified: " << num_reg[r1] << " = " << reg[r1] << " (0x" << decimalToHexadecimal(reg[r1]) << ")\n\n";
         PC += 4;
         return true;
     }
-    cout << "DRAM request issued for Instruction: " << instructions[PC / 4] << "\n";
-    cout << "Memory Address of Instruction: " << PC << "\n\n";
+    std::cout << "DRAM request issued for Instruction: " << instructions[PC / 4] << "\n";
+    std::cout << "Memory Address of Instruction: " << PC << "\n\n";
     // add request to core buffer
     if(ins_num == 7) {
         Request req = {(int)addr, (int)addr / 1024, 0, r1, LW, PC, coreNum, instructions[PC / 4], 0, 0};
@@ -433,6 +432,8 @@ bool Core::addRequest(int r1, int offset, int r2, int ins_num) {
             req.nextPointer = freeLocBuffer[start];
             // store request
             buffer[headPointer] = req;
+            isNotEmpty = true;
+            cout << "Gi\n";
         }
     }    
     else {  
@@ -476,6 +477,8 @@ bool Core::addRequest(int r1, int offset, int r2, int ins_num) {
             req.nextPointer = freeLocBuffer[start];
             // store request
             buffer[headPointer] = req;
+            isNotEmpty = true;
+            cout << "Gir\n";
         }
     }
     // increment PC by 4
@@ -487,9 +490,15 @@ void Core::deleteRequest() {
     // free up the head pointer
     if(end == 31) end = 0;
     else end ++;
+    Request req = buffer[headPointer];
+    // remove dependency
+    if(req.type == LW) {
+        regPendingWrite[req.writeDest] --;
+    } 
     freeLocBuffer[end] = headPointer;
     // decrement the number of requests
     requestCounter --;
+    std::cout << "Hello\n";
     if(requestCounter == 0) {
         // update head and tail pointers
         headPointer = freeLocBuffer[start];
@@ -511,10 +520,11 @@ struct Manager {
     int coreNum;         // core, request of which is being processed by DRAM
     bool isIdle;         // flag that tells if the MRM is idle or not
     bool foundNextReq;   // control signal that tells that the manager found the next request
-    vector<Core> cores;  // all the cores
+    vector<Core*> cores;  // all the cores
     Request* currReq;    // request being currently processed by DRAM
     Request* nextReq;    // next request which should be processed by DRAM
     int searchPointer;   // used to search for next request
+    int currentPointer;  // pointer to current index
     bool isSearching;    // flag that tells whether manager is searching or not
 
     int dependency[32];
@@ -536,7 +546,10 @@ Manager::Manager(vector<Core> &cores) {
     nextReq = NULL;
     isSearching = false;
     refresh();
-    this->cores = cores;
+    this->cores.resize(cores.size());
+    for(int i = 0; i < cores.size(); i ++) {
+        this->cores[i] = &cores[i];
+    }
 }
 
 void Manager::refresh() {
@@ -547,19 +560,23 @@ void Manager::refresh() {
 
 // single clock cycle (executed when both currReq and nextReq are NULL)
 void Manager::firstRequest() {
-    if(coreNum != 0 && cores[coreNum - 1].isNotEmpty) {
-        if(cores[coreNum - 1].buffer[cores[coreNum - 1].headPointer].memRow == rowNum) {
+    if(coreNum != 0 && (*cores[coreNum - 1]).isNotEmpty) {
+        if((*cores[coreNum - 1]).buffer[(*cores[coreNum - 1]).headPointer].memRow == rowNum) {
             foundNextReq = true;
-            nextReq = &cores[coreNum - 1].buffer[cores[coreNum - 1].headPointer];
+            currentPointer = (*cores[coreNum - 1]).headPointer;
+            nextReq = &(*cores[coreNum - 1]).buffer[(*cores[coreNum - 1]).headPointer];
             return;
         }
     }
     for(int i = 0; i < cores.size(); i ++) {
-        if(!cores[i].isNotEmpty) continue;
+        std::cout << (*cores[i]).isNotEmpty << "\n";
+        if(!(*cores[i]).isNotEmpty) continue;
         else {
             coreNum = i + 1;
             foundNextReq = true;
-            nextReq = &cores[i].buffer[cores[i].headPointer];
+            currentPointer = (*cores[i]).headPointer;
+            nextReq = &(*cores[i]).buffer[(*cores[i]).headPointer];
+            std::cout << "got in\n";
             break;
         }
     }
@@ -567,297 +584,49 @@ void Manager::firstRequest() {
 
 // searches for next request to send to the DRAM, can take multiple clock cycles
 void Manager::searchRequest() {
-    Request req = cores[coreNum - 1].buffer[searchPointer];
-    if(req.memRow == rowNum) {
-        // possible next request
-                
+    int i = 0;
+    searchPointer = (*cores[coreNum - 1]).buffer[currentPointer].nextPointer;
+    std::cout << searchPointer;
+    while(searchPointer != -1 && i < 16) {
+        Request req = (*cores[coreNum - 1]).buffer[searchPointer];
+        if(req.memRow == rowNum) {
+            // possible next request
+            if(req.type == SW) {
+                // next request confirmed
+                nextReq = &req;
+                foundNextReq = true;
+                currentPointer = searchPointer;
+                return;
+            }
+            else {
+                // req.type == LW
+                // check for dependency
+                if(dependency[req.writeDest] != 0) {
+                    // re ordering not possible
+                    dependency[req.writeDest] ++;
+                    currentPointer = searchPointer;
+                    searchPointer = (*cores[coreNum - 1]).buffer[searchPointer].nextPointer;
+                }
+                else {
+                    // next request confirmed
+                    nextReq = &req;
+                    foundNextReq = true;
+                    currentPointer = searchPointer;
+                    return;
+                }
+            }
+        }
+        else {
+            if(req.type == LW) {
+                dependency[req.writeDest] ++;
+            }
+            currentPointer = searchPointer;
+            searchPointer = (*cores[coreNum - 1]).buffer[searchPointer].nextPointer;
+        }
     }
 }
 
-vector<Request> reqBuffer, manBuffer;
-
-// struct Queue {
-//     map<int, vector<int>> MemToAdj;
-//     map<string, pair<int, int>> Pread, Pwrite;
-//     map<int, string> reverseMap =
-//         { {0, "$zero"}, {1, "$at"}, {2, "$v0"}, {3, "$v1"}, {4, "$a0"}, {5, "$a1"}, {6, "$a2"}, {7, "$a3"}, {8, "$t0"}, {9, "$t1"}, {10, "$t2"},
-//         {11, "$t3"}, {12, "$t4"}, {13, "$t5"}, {14, "$t6"}, {15, "$t7"}, {16, "$s0"}, {17, "$s1"}, {18, "$s2"}, {19, "$s3"}, {20, "$s4"}, {21, "$s5"},
-//         {22, "$s6"}, {23, "$s7"}, {24, "$t8"}, {25, "$t9"}, {26, "$k0"}, {27, "$k1"}, {28, "$gp"}, {29, "$sp"}, {30, "$fp"}, {31, "$ra"} };
-//     vector<queue<Request>> Adj;
-//     int adjIndex = 0;
-    
-//     bool isEmpty() {
-//         return (adjIndex == Adj.size());
-//     }
-
-//     int BinarySearch(int key, int low, int high, vector<int> &vec) {
-//         int mid;
-//         if(low > high)
-//             return vec.size();
-//         while(low < high) {
-//             mid = (low + high) / 2;
-//             if(vec[mid] < key) {
-//                 low = mid + 1;
-//             }
-//             else {
-//                 //assert: vec[mid] >= key
-//                 high = mid;
-//             }
-//         }
-//         //assert: low = high
-//         if(vec[low] >= key) {
-//             //check vec[low]
-//             return low;
-//         }
-//         return vec.size();
-//     }
-
-//     void addRequest(Request req) {
-//         int loc;
-//         string memAddr;
-//         if(MemToAdj.find(req.row) == MemToAdj.end()) {
-//             loc = Adj.size();
-//             memAddr = to_string(req.addr);
-//             // Add to MemToAdj
-//             vector<int> vec;
-//             vec.push_back(1);
-//             vec.push_back(loc);
-//             MemToAdj.insert({req.row, vec});
-//             // Add to Adj, create a new queue
-//             queue<Request> que;
-//             que.push(req);
-//             Adj.push_back(que);
-//             if(req.type == "sw") {
-//                 // Update pending write
-//                 Pwrite.insert({memAddr, make_pair(loc, 1)});
-//             }
-//             else {
-//                 // req.type == "lw"
-//                 // Update pending read (memory)
-//                 Pread.insert({memAddr, make_pair(loc, 1)});
-//                 // Update pending write (register)
-//                 int regCode = req.destination;
-//                 string reg = reverseMap[regCode];
-//                 if(Pwrite.find(reg) == Pwrite.end()) {
-//                     Pwrite.insert({reg, make_pair(loc, 1)});
-//                 }
-//                 else {
-//                     Pwrite[reg].first = loc;
-//                     Pwrite[reg].second = Pwrite[reg].second + 1;
-//                 }
-//             }
-//         }
-//         else {
-//             // memory row is present
-//             if(req.type == "sw") {
-//                 memAddr = to_string(req.addr);
-//                 if(Pread.find(memAddr) == Pread.end()) {
-//                     if(Pwrite.find(memAddr) == Pwrite.end()) {
-//                         // no pending read and no pending write
-//                         // Add to first Adj location
-//                         int i = MemToAdj[req.row][0];
-//                         if(i < MemToAdj[req.row].size()) {
-//                             loc = MemToAdj[req.row][i];
-//                             Adj[loc].push(req);
-//                             // Add to Pwrite
-//                             Pwrite.insert({memAddr, make_pair(loc, 1)});
-//                         }
-//                         else {
-//                             loc = Adj.size();
-//                             MemToAdj[req.row].push_back(loc);
-//                             // Add to Adj
-//                             queue<Request> que;
-//                             que.push(req);
-//                             Adj.push_back(que);
-//                             // Add to Pwrite
-//                             Pwrite.insert({memAddr, make_pair(loc, 1)});
-//                         }
-//                     }
-//                     else {
-//                         // there is a pending write
-//                         loc = Pwrite[memAddr].first;
-//                         Adj[loc].push(req);
-//                         // Update Pwrite
-//                         Pwrite[memAddr].second = Pwrite[memAddr].second + 1;
-//                     }
-//                 }
-//                 else {
-//                     // there is a pending read
-//                     loc = Pread[memAddr].first;
-//                     Adj[loc].push(req);
-//                     // Update Pwrite
-//                     if(Pwrite.find(memAddr) != Pwrite.end()) {
-//                         Pwrite[memAddr].first = loc;
-//                         Pwrite[memAddr].second = Pwrite[memAddr].second + 1;
-//                     }
-//                     else {
-//                         Pwrite.insert({memAddr, make_pair(loc, 1)});
-//                     }    
-//                 }
-//             }
-//             else {
-//                 // req.type == "lw"
-//                 memAddr = to_string(req.addr);
-//                 string reg = reverseMap[req.destination];
-//                 if(Pwrite.find(reg) == Pwrite.end()) {
-//                     // no pending write on register
-//                     if(Pwrite.find(memAddr) == Pwrite.end()) {
-//                         // no pending write on memory
-//                         int i = MemToAdj[req.row][0];
-//                         if(i < MemToAdj[req.row].size()) {
-//                             loc = MemToAdj[req.row][i];
-//                             Adj[loc].push(req);
-//                             if(Pread.find(memAddr) == Pread.end()) {
-//                                 // Add to Pread
-//                                 Pread.insert({memAddr, make_pair(loc, 1)});
-//                             }
-//                             else {
-//                                 // Update Pread
-//                                 Pread[memAddr].first = loc > Pread[memAddr].first ? loc : Pread[memAddr].first;
-//                                 Pread[memAddr].second = Pread[memAddr].second + 1;
-//                             }
-//                             // Add register to Pwrite
-//                             Pwrite.insert({reg, make_pair(loc, 1)});
-//                         }
-//                         else {
-//                             loc = Adj.size();
-//                             MemToAdj[req.row].push_back(loc);
-//                             queue<Request> que;
-//                             que.push(req);
-//                             Adj.push_back(que);
-//                             if(Pread.find(memAddr) == Pread.end()) {
-//                                 // Add to Pread
-//                                 Pread.insert({memAddr, make_pair(loc, 1)});
-//                             }
-//                             else {
-//                                 // Update Pread
-//                                 Pread[memAddr].first = loc > Pread[memAddr].first ? loc : Pread[memAddr].first;
-//                                 Pread[memAddr].second = Pread[memAddr].second + 1;
-//                             }
-//                             // Add register to Pwrite
-//                             Pwrite.insert({reg, make_pair(loc, 1)});
-//                         }
-//                     }
-//                     else {
-//                         // there is a pending write on memory
-//                         loc = Pwrite[memAddr].first;
-//                         Adj[loc].push(req);
-//                         if(Pread.find(memAddr) == Pread.end()) {
-//                             // Add to Pread
-//                             Pread.insert({memAddr, make_pair(loc, 1)});
-//                         }
-//                         else {
-//                             // Update Pread
-//                             if(Pread[memAddr].first < loc) {
-//                                 Pread[memAddr].first = loc;
-//                             }
-//                             Pread[memAddr].second = Pread[memAddr].second + 1;
-//                         }
-//                         // Add register to Pwrite
-//                         Pwrite.insert({reg, make_pair(loc, 1)});
-//                     }
-//                 }
-//                 else {
-//                     // there is a pending write on register
-//                     int key = Pwrite[reg].first;
-//                     int low, high;
-//                     if(Pwrite.find(memAddr) != Pwrite.end()) {
-//                         if(key < Pwrite[memAddr].first) {
-//                             key = Pwrite[memAddr].first;
-//                         }
-//                     }
-//                     low = MemToAdj[req.row][0];
-//                     high = MemToAdj[req.row].size() - 1;
-//                     int i = BinarySearch(key, low, high, MemToAdj[req.row]);
-//                     if(i < low || i > high) {
-//                         // Add new queue
-//                         loc = Adj.size();
-//                         queue<Request> que;
-//                         que.push(req);
-//                         Adj.push_back(que);
-//                         MemToAdj[req.row].push_back(loc);
-//                         // Update Pwrite
-//                         Pwrite[reg].first = loc;
-//                         Pwrite[reg].second = Pwrite[reg].second + 1;
-//                         if(Pread.find(memAddr) == Pread.end()) {
-//                             // Add to Pread
-//                             Pread.insert({memAddr, make_pair(loc, 1)});
-//                         }
-//                         else {
-//                             // Update Pread
-//                             Pread[memAddr].first = loc;
-//                             Pread[memAddr].second = Pread[memAddr].second + 1;
-//                         }
-//                     }
-//                     else {
-//                         // i is the upmost safest queue
-//                         loc = MemToAdj[req.row][i];
-//                         Adj[loc].push(req);
-//                         // Update Pwrite
-//                         Pwrite[reg].first = loc;
-//                         Pwrite[reg].second = Pwrite[reg].second + 1;
-//                         if(Pread.find(memAddr) == Pread.end()) {
-//                             // Add to Pread
-//                             Pread.insert({memAddr, make_pair(loc, 1)});
-//                         }
-//                         else {
-//                             // Update Pread
-//                             if(Pread[memAddr].first < loc) {
-//                                 Pread[memAddr].first = loc;
-//                             }
-//                             Pread[memAddr].second = Pread[memAddr].second + 1;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//         // remove pending write on zero register if any
-//         if(Pwrite.find("$zero") != Pwrite.end()) {
-//             Pwrite.erase("$zero");
-//         }
-//     }
-
-//     Request getRequest() {
-//         Request req = Adj[adjIndex].front();
-//         return req;
-//     }
-
-//     void deleteRequest() {
-//         Request req = Adj[adjIndex].front();
-//         Adj[adjIndex].pop();
-//         if(Adj[adjIndex].empty()) {
-//             adjIndex ++;
-//             MemToAdj[req.row][0] ++;
-//         }
-//         string memAddr = to_string(req.addr);
-//         if(req.type == "sw") {
-//             Pwrite[memAddr].second --;
-//             if(Pwrite[memAddr].second == 0) {
-//                 Pwrite.erase(memAddr);
-//             }
-//         }
-//         else {
-//             // req.type == "lw"
-//             Pread[memAddr].second --;
-//             if(Pread[memAddr].second == 0) {
-//                 Pread.erase(memAddr);
-//             }
-//             string reg = reverseMap[req.destination];
-//             Pwrite[reg].second --;
-//             if(Pwrite[reg].second == 0) {
-//                 Pwrite.erase(reg);
-//             }
-//         }
-//     }
-//     bool inPwrite(int val1, int val2 = -1, int val3 = -1) {
-//         string s1 = reverseMap[val1], s2 = reverseMap[val2], s3 = reverseMap[val3];
-//         return (Pwrite.find(s1) != Pwrite.end() || Pwrite.find(s2) != Pwrite.end() || Pwrite.find(s3) != Pwrite.end());
-//     }
-
-// };
-
-
-#include "OldFunctions.h"
+#include "parsing.hpp"
 
 bool checkPC(vector<Core> &cores){
     
@@ -888,6 +657,7 @@ bool simulator(vector<Core> &cores) {
 
     // dram parameters
     bool dramIsIdle = true;
+    bool dramWriteback = false;
     int completionCycleDRAM = 0;
     int start = -1;
     bool isEmpty = true, doWriteback = false;
@@ -900,21 +670,22 @@ bool simulator(vector<Core> &cores) {
     Request req;
     int row_start, addr, src, data, i, type;
     int data_bus = -1;
-
-    
+    bool deleteReq = false;
     // while there is a functioning core
     while (checkPC(cores) && cycle < M) {
         // increment cycle count by 1
+        std::cout << reqManager.searchPointer << "jnsd\n";
         cycle ++;
-
+        deleteReq = false;
         // check if dram is idle, pick up a request from memory request manager
         if(dramIsIdle) {
             if(reqManager.nextReq != NULL) {
+                std::cout << "kon";
                 // make the next request as current request
                 reqManager.currReq = reqManager.nextReq;
                 reqManager.nextReq = NULL;
                 // store the request in req
-                req = *reqManager.currReq;
+                req = *(reqManager.currReq);
                 i = req.coreNum - 1;
                 row_start = req.memRow * 1024; // absolute row number
                 addr = req.memAddr;            // absolute memory address
@@ -946,6 +717,7 @@ bool simulator(vector<Core> &cores) {
                     }
                     copies++;
                 }  
+                std::cout << "ho\n";
                 start = row_start;
                 isEmpty = false; 
                 vector<int>::iterator iter = find(memoryAddress.begin(), memoryAddress.end(), addr);
@@ -959,39 +731,60 @@ bool simulator(vector<Core> &cores) {
                 // no request sent by manager
                 completionCycleDRAM = 0;
                 // MRM checks for any requests
-                reqManager.firstRequest();
+                if(reqManager.searchPointer != -1) {
+                    reqManager.searchRequest();
+                }
+                else {
+                    reqManager.firstRequest();
+                    if(reqManager.nextReq != NULL) {
+                        if(reqManager.rowNum != -1) {
+                            dramWriteback = true;
+                            dramIsIdle = false;
+                            completionCycleDRAM = cycle + ROW_ACCESS_DELAY - 1;
+                            for(int i = 0; i < 1024; i ++) {
+                                DRAM[start + i] = ROW_BUFFER[i];
+                            }
+                        }
+                        else {
+                            dramIsIdle = true;
+                        }    
+                    }
+                }    
             }
         }
         else {
-            if(cycle == completionCycleDRAM) {
-                if(type == SW) {
-                    // write into buffer
-                     ROW_BUFFER[addr + row_start] = data;
+            if(dramWriteback) {
+                if(cycle == completionCycleDRAM) {
+                    dramWriteback = false;
+                    dramIsIdle = true;
+                    completionCycleDRAM = 0;
                 }
-                else {
-                    cores[i].reg[src] = (src == 0) ? 0 : ROW_BUFFER[addr - row_start];
-                    cores[i].writeActive = true;
-                }
-                reqManager.currReq = NULL;
-                cores[i].deleteRequest();
-                dramIsIdle = true;
-                completionCycleDRAM = 0;
             }
             else {
-                if(reqManager.nextReq == NULL) {
-                    // manager searches for next request to send to DRAM
+                std::cout << "kaho\n";
+                if(cycle == completionCycleDRAM) {
+                    if(type == SW) {
+                        // write into buffer
+                        ROW_BUFFER[addr + row_start] = data;
+                    }
+                    else {
+                        cores[i].reg[src] = (src == 0) ? 0 : ROW_BUFFER[addr - row_start];
+                        cores[i].writeActive = true;
+                    }
+                    reqManager.currReq = NULL;
+                    deleteReq = true;
+                    dramIsIdle = true;
+                    completionCycleDRAM = 0;
                 }
                 else {
-                    //nothing to be done
+                    if(reqManager.nextReq == NULL || !reqManager.foundNextReq) {
+                        // MRM searches for next request
+                        std::cout << "hls" << reqManager.searchPointer << "\n";
+                        reqManager.searchRequest();
+                    }
                 }
             }
         }
-
-        completionCycleDRAM = cycle + 2 * ROW_ACCESS_DELAY + COL_ACCESS_DELAY - 1;
-        for(int i = 0; i < 1024; i ++) {
-            DRAM[start + i] = ROW_BUFFER[i];
-        }
-        writebacks++;
         
 
         for(int i = 0; i < N; i++){
@@ -999,9 +792,13 @@ bool simulator(vector<Core> &cores) {
             // increment core cycle count
             cores[i].cycleCount ++;
             // get instruction code
-            if(cores[i].PC >= cores[i].PARTITION) continue;
-            ins_code = cores[i].insMem[cores[i].PC];
-            val1 = cores[i].insMem[cores[i].PC + 1]; val2 = cores[i].insMem[cores[i].PC + 2]; val3 = cores[i].insMem[cores[i].PC + 3];
+            if(cores[i].PC >= cores[i].PARTITION) {
+                if(!cores[i].isNotEmpty)
+                    cores[i].isWorking = false;
+               continue;
+            }    
+            ins_code = cores[i].insMemory[cores[i].PC];
+            val1 = cores[i].insMemory[cores[i].PC + 1]; val2 = cores[i].insMemory[cores[i].PC + 2]; val3 = cores[i].insMemory[cores[i].PC + 3];
             switch (ins_code) {
                 // add
                 case 0:
@@ -1093,36 +890,39 @@ bool simulator(vector<Core> &cores) {
                     break;
             }
         }
+        if(deleteReq)
+            cores[i].deleteRequest();
+
     }
-    cout << "PROGRAM SIMULATION ENDED.\n";
+    std::cout << "PROGRAM SIMULATION ENDED.\n";
     if (!isEmpty && doWriteback) {
         writebacks++;
         for (int i = 0; i < 1024; i++) {
             DRAM[start + i] = ROW_BUFFER[i];
         }
-        cout << "Executing pending writeback:\n";
-        cout << "Cycle " << cycle + 1 << ": DRAM request issued\n";
-        cout << "Cycle " << cycle + 2 << "-" << cycle + ROW_ACCESS_DELAY + 1 << ":" << " WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : " << start << "-" << end << ")\n";
+        std::cout << "Executing pending writeback:\n";
+        std::cout << "Cycle " << cycle + 1 << ": DRAM request issued\n";
+        std::cout << "Cycle " << cycle + 2 << "-" << cycle + ROW_ACCESS_DELAY + 1 << ":" << " WRITEBACK: Copying from ROW BUFFER to DRAM (Row (Data section) : " << start << "-" << start + 1023 << ")\n";
         cycle = cycle + ROW_ACCESS_DELAY + 1;
     }
     for(int i = 0; i < N; i ++) {
-        cout << "Core " << i + 1 << "\n";
+        std::cout << "Core " << i + 1 << "\n";
         cores[i].execution_stats();
     }
     int n = memoryAddress.size();
     if (n != 0) {
         sort(memoryAddress.begin(), memoryAddress.end());
-        cout << "\nMemory content at the end of the execution (Data section):\n";
+        std::cout << "\nMemory content at the end of the execution (Data section):\n";
         for (int i = 0; i < n; i++) {
-            cout << memoryAddress[i] << "-" << memoryAddress[i] + 3 << " = " << DRAM[memoryAddress[i]] << " (0x" << decimalToHexadecimal(DRAM[memoryAddress[i]]) << ")\n";
+            std::cout << memoryAddress[i] << "-" << memoryAddress[i] + 3 << " = " << DRAM[memoryAddress[i]] << " (0x" << decimalToHexadecimal(DRAM[memoryAddress[i]]) << ")\n";
         }
     }
-    cout << "\nTotal ROW BUFFER operations (writeback/activation/read/write): " << writebacks + copies + value_write + value_read << "\n";
-    cout << "Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): " << writebacks << "\n";
-    cout << "Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): " << copies << " (ROW BUFFER update)\n";
-    cout << "Number of times data was written on ROW BUFFER (WRITE):" << value_write << " (ROW BUFFER update)\n";
-    cout << "Number of times data was read from ROW BUFFER (READ):" << value_read << "\n\n";
-    cout << "______________________________________________________________________________________________________\n\n";
+    std::cout << "\nTotal ROW BUFFER operations (writeback/activation/read/write): " << writebacks + copies + value_write + value_read << "\n";
+    std::cout << "Number of times data was written back on DRAM from ROW BUFFER (WRITEBACK): " << writebacks << "\n";
+    std::cout << "Number of times data was copied from DRAM to ROW BUFFER (ACTIVATION): " << copies << " (ROW BUFFER update)\n";
+    std::cout << "Number of times data was written on ROW BUFFER (WRITE):" << value_write << " (ROW BUFFER update)\n";
+    std::cout << "Number of times data was read from ROW BUFFER (READ):" << value_read << "\n\n";
+    std::cout << "______________________________________________________________________________________________________\n\n";
     return true;
 }
 
@@ -1133,7 +933,7 @@ int main(int argc, char** argv) {
     if (argc >= 5) {
         // raise warning if extra arguments are provided
         if ((argc > 5 && !isInteger(argv[5])) || argc > 6) {
-            cout << "WARNING: Extra command line arguments were provided! Four/Five integer arguments are expected from the user.\nRefer to README.md for more details..\n";
+            std::cout << "WARNING: Extra command line arguments were provided! Four/Five integer arguments are expected from the user.\nRefer to README.md for more details..\n";
         }
         else if(argc > 5 && isInteger(argv[5])) {
             int n = stoi(argv[5]);
@@ -1148,7 +948,7 @@ int main(int argc, char** argv) {
         // file name
         
         if (!isInteger(argv[1]) || !isInteger(argv[2]) || !isInteger(argv[3]) || !isInteger(argv[4])) {
-            cout << "ERROR: Some arguments are non-integers. Integer arguments are expected. Program terminating!\n";
+            std::cout << "ERROR: Some arguments are non-integers. Integer arguments are expected. Program terminating!\n";
             return 0;
         }
         else {
@@ -1157,15 +957,15 @@ int main(int argc, char** argv) {
             ROW_ACCESS_DELAY = stoi(argv[3]);
             COL_ACCESS_DELAY = stoi(argv[4]);
             if (M <= 0 || N <= 0 || ROW_ACCESS_DELAY <= 0 || COL_ACCESS_DELAY <= 0) {
-                cout << "ERROR: Some argument are negative or zero. Positive arguments are expected. Program terminating!\n";
+                std::cout << "ERROR: Some argument are negative or zero. Positive arguments are expected. Program terminating!\n";
                 return 0;
             }
         }
     }
     else {
         // insufficient number of arguments
-        cout << "ERROR: Insufficient number of arguments were provided! Four arguments are expected from the user.\nRefer to README.md for more details..\n";
-        cout << "Program terminating!\n";
+        std::cout << "ERROR: Insufficient number of arguments were provided! Four arguments are expected from the user.\nRefer to README.md for more details..\n";
+        std::cout << "Program terminating!\n";
         return 0;
     }
     // read from N files
@@ -1177,7 +977,7 @@ int main(int argc, char** argv) {
         infile[i].open("t"+to_string(i+1)+".txt");
         if (!infile[i].is_open()) {
             cores[i].isWorking = false;
-            cout << "Core "+to_string(i+1)+" raised ERROR: Unable to open file t" + to_string(i+1)+".txt.!\n";
+            std::cout << "Core "+to_string(i+1)+" raised ERROR: Unable to open file t" + to_string(i+1)+".txt.!\n";
         }
         cores[i].coreNum = i + 1;
         cores[i].DATA_START = i * (1024 / N) * 1024;
@@ -1201,7 +1001,7 @@ int main(int argc, char** argv) {
         //read file, line by line
         while (getline(infile[i], line)) {
             if(cores[i].PC >= 524288){
-                cout<<"Core " + to_string(i+1) << " raised ERROR: Instruction memory overflow.\n";
+                std::cout<<"Core " + to_string(i+1) << " raised ERROR: Instruction memory overflow.\n";
                 cores[i].isWorking = false;
                 break;
             }
@@ -1230,16 +1030,17 @@ int main(int argc, char** argv) {
     }
 
     // optimise code
-    if(compilerOptimisation) {
-        for(int i = 0; i < N; i ++) {
-            cores[i].optimise();
-        }
-    }
+    // if(compilerOptimisation) {
+    //     for(int i = 0; i < N; i ++) {
+    //         cores[i].optimise();
+    //     }
+    // }
     // execute the program
+
     flag = simulator(cores);
 
     if (flag)
-        cout << "\nProgram executed successfully!\n\n";
+        std::cout << "\nProgram executed successfully!\n\n";
 
     // close the input file stream
     for(int i = 0; i < N; i++){
